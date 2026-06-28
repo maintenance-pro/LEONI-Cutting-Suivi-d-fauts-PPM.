@@ -406,6 +406,48 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
 .kpi .ksp path.ln{stroke-width:1.7;fill:none;stroke-linejoin:round;stroke-linecap:round}
 
 /* ===== En-tête de rapport (impression seule) ===== */
+/* ===== Carte de chaleur ===== */
+.heat-tabs{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px}
+.heat-tab{padding:6px 13px;border:none;border-radius:6px;background:transparent;color:var(--mid);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:.12s}
+.heat-tab:hover{color:var(--hi)}
+.heat-tab.on{background:var(--accent);color:#fff}
+.heat-wrap{overflow-x:auto;margin-top:8px;padding-bottom:6px}
+.heat{min-width:max-content;display:flex;flex-direction:column;gap:3px}
+.heat-row{display:flex;gap:3px;align-items:center}
+.heat-corner{flex:0 0 110px}
+.heat-colh{flex:0 0 34px;text-align:center;font-size:9px;color:var(--dim);font-weight:700}
+.heat-lbl{flex:0 0 110px;text-align:right;padding-right:10px;font-size:11.5px;color:var(--mid);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heat-cell{flex:0 0 34px;height:28px;border-radius:4px;border:1px solid var(--line);transition:transform .1s,border-color .1s}
+.heat-cell:hover{transform:scale(1.2);border-color:var(--hi);position:relative;z-index:3}
+.heat-scale{display:flex;align-items:center;gap:10px;margin-top:13px;font-size:10.5px;color:var(--dim)}
+.heat-scale .bar{height:9px;width:170px;border-radius:5px;background:linear-gradient(90deg,rgba(251,90,106,.10),rgba(251,90,106,1))}
+
+/* ===== Analyse par shift ===== */
+.shiftbox{margin-top:8px;display:flex;flex-direction:column;gap:15px;padding:10px 2px}
+.shift-row{display:flex;align-items:center;gap:13px}
+.shift-lbl{flex:0 0 128px;font-size:13px;color:var(--hi);font-weight:600}
+.shift-lbl small{display:block;color:var(--dim);font-weight:500;font-size:10.5px;margin-top:1px}
+.shift-track{flex:1;height:22px;background:var(--panel3);border-radius:6px;overflow:hidden}
+.shift-fill{height:100%;border-radius:6px;background:var(--grad-b);min-width:3px;transition:width .45s ease}
+.shift-val{flex:0 0 76px;font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--hi);text-align:right}
+.shift-empty{padding:26px 18px;text-align:center;color:var(--dim);font-size:13px;border:1px dashed var(--line2);border-radius:10px;line-height:1.55}
+
+/* ===== Comparatif mois N vs N-1 ===== */
+.cmp{margin-top:6px}
+.cmp-metrics{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.cmp-metric{flex:1 1 0;min-width:155px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:13px 16px}
+.cmp-m-k{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);font-weight:700;margin-bottom:8px}
+.cmp-m-row{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.cmp-m-v{font-size:21px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--hi);line-height:1}
+.cmp-m-prev{font-size:11px;color:var(--mid)}
+.cmp-movers{display:flex;gap:18px;flex-wrap:wrap}
+.cmp-mv-col{flex:1 1 0;min-width:250px}
+.cmp-mv-h{font-size:12px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.mover{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 13px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;margin-bottom:7px}
+.mover-n{font-size:12.5px;color:var(--hi);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mover-d{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;white-space:nowrap}
+.cmp-empty{padding:26px;text-align:center;color:var(--dim);font-size:13px;border:1px dashed var(--line2);border-radius:10px}
+
 .print-head{display:none}
 
 @media print{
@@ -623,6 +665,42 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
         <div class="sub" id="cls-sub"></div></div>
       <div class="cv h220"><canvas id="chClass"></canvas></div>
       <div class="legend" id="lg-class"></div>
+    </div>
+
+    <!-- HEATMAP : semaine × dimension -->
+    <div class="card col12">
+      <div class="ch" style="align-items:center">
+        <div class="ti"><span class="eyebrow">Carte de chaleur</span><h3>Intensité des défauts · semaine × <span id="heat-dimname">source</span></h3>
+          <div class="sub" id="heat-sub"></div></div>
+        <div class="heat-tabs">
+          <button class="heat-tab on" data-hd="pc">Source</button>
+          <button class="heat-tab" data-hd="eq">Équipe</button>
+          <button class="heat-tab" data-hd="sh">Shift</button>
+        </div>
+      </div>
+      <div class="heat-wrap"><div class="heat" id="heat"></div></div>
+      <div class="heat-scale" id="heat-scale"></div>
+    </div>
+
+    <!-- OBJECTIF SCRAP -->
+    <div class="card col7">
+      <div class="ch"><div class="ti"><span class="eyebrow">Objectif · File 2</span><h3>Scrap mensuel vs cible</h3></div>
+        <div class="sub" id="scrap-sub">pièces rebutées par mois</div></div>
+      <div class="cv h280"><canvas id="chScrap"></canvas></div>
+    </div>
+
+    <!-- ANALYSE PAR SHIFT -->
+    <div class="card col5">
+      <div class="ch"><div class="ti"><span class="eyebrow">Production</span><h3>Défauts par shift</h3></div>
+        <div class="sub" id="shift-sub"></div></div>
+      <div id="shiftBox" class="shiftbox"></div>
+    </div>
+
+    <!-- COMPARATIF MOIS N vs N-1 -->
+    <div class="card col12">
+      <div class="ch"><div class="ti"><span class="eyebrow">Comparatif</span><h3 id="cmp-title">Mois N vs N-1</h3></div>
+        <div class="sub">évolution détaillée entre les deux derniers mois de la sélection</div></div>
+      <div id="cmpBox" class="cmp"></div>
     </div>
 
     <!-- DETAIL TABLE -->
@@ -1229,6 +1307,18 @@ function initCharts(){
     options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
       plugins:{legend:{display:false},tooltip:{backgroundColor:tc('--pop-bg'),borderColor:tc('--line2'),borderWidth:1,padding:10,
         callbacks:{label:c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);return ' '+c.label+': '+fmt(c.parsed)+'  ('+(t?(c.parsed/t*100).toFixed(1):0)+'%)';}}}}}});
+
+  const csc=document.getElementById('chScrap').getContext('2d');
+  charts.scrap=new Chart(csc,{
+    data:{labels:DATA.ppm.months,datasets:[
+      {type:'bar',label:'Scrap réel (pcs)',data:[],backgroundColor:makeGrad(csc,'#f7b733','#6e5113'),borderRadius:4,maxBarThickness:46,order:2},
+      {type:'line',label:'Cible',data:[],borderColor:C.crimson,borderWidth:2,borderDash:[6,4],pointRadius:0,fill:false,tension:0,spanGaps:true,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'top',align:'end',labels:{color:tc('--chart-tick'),boxWidth:10,boxHeight:10,padding:12,font:{size:11}}},
+        tooltip:{backgroundColor:tc('--pop-bg'),borderColor:tc('--line2'),borderWidth:1,padding:11,titleColor:tc('--hi'),bodyColor:tc('--mid'),
+          callbacks:{label:c=>' '+(c.dataset.label?c.dataset.label+': ':'')+fmt(c.parsed.y ?? c.parsed)+' pcs'}}},
+      scales:{x:{grid:{display:false},ticks:{color:tc('--chart-tick')}},y:{grid:{color:tc('--chart-grid'),drawBorder:false},ticks:{color:tc('--chart-tick'),callback:v=>fmt(v)}}}}});
 }
 function donut(id){
   return new Chart(document.getElementById(id),{type:'doughnut',
@@ -1403,8 +1493,113 @@ function render(){
   const domCat=clLabels[clData.indexOf(Math.max(...clData))]||'—';
   document.getElementById('cls-sub').textContent=`Source dominante : ${domCat}`;
 
+  // objectif scrap (File 2, mensuel) + ligne cible
+  const scR=DATA.ppm.scrapResultPcs.map(v=>v==null?null:Math.round(v));
+  const scT=DATA.ppm.scrapTargetPcs.map(v=>v==null?null:Math.round(v));
+  charts.scrap.data.datasets[0].data=scR;
+  charts.scrap.data.datasets[1].data=scT;
+  charts.scrap.update();
+  const scRsum=scR.reduce((a,v)=>a+(v||0),0), scTsum=DATA.ppm.scrapTargetPcs.reduce((a,v)=>a+(v||0),0);
+  const scPct=scTsum?Math.round((scRsum-scTsum)/scTsum*100):0;
+  document.getElementById('scrap-sub').innerHTML=`${fmt(scRsum)} pcs rebutées vs cible ${fmt(scTsum)} · <span class="delta ${scPct<=0?'down':'up'}">${scPct<=0?'▼':'▲'} ${Math.abs(scPct)}% ${scPct<=0?'sous cible ✓':'au-dessus ⚠'}</span>`;
+
+  // défauts par shift (réclamations avec shift renseigné)
+  const shRows=fr.filter(r=>r.sh && !BAD_VALS.includes(r.sh));
+  const shBox=document.getElementById('shiftBox');
+  if(!shRows.length){
+    shBox.innerHTML=`<div class="shift-empty">Aucune donnée de shift pour l'instant.<br>Les défauts par shift apparaîtront ici dès que des réclamations seront saisies avec le <b>shift renseigné</b> (Matin / Après-midi / Nuit).</div>`;
+    document.getElementById('shift-sub').textContent='en attente de saisie';
+  }else{
+    const shAgg=sumBy(shRows,'sh').sort((a,b)=>String(a[0]).localeCompare(String(b[0]),'fr'));
+    const shMax=Math.max(...shAgg.map(([,v])=>v),1), shTot=shAgg.reduce((a,[,v])=>a+v,0);
+    shBox.innerHTML=shAgg.map(([s,v])=>`
+      <div class="shift-row">
+        <div class="shift-lbl">${esc(s)}<small>${shTot?Math.round(v/shTot*100):0}% des défauts</small></div>
+        <div class="shift-track"><div class="shift-fill" style="width:${Math.max(v/shMax*100,3)}%"></div></div>
+        <div class="shift-val">${fmt(v)}</div></div>`).join('');
+    document.getElementById('shift-sub').textContent=`${fmt(shRows.length)} réclamation(s) · ${fmt(shTot)} pcs`;
+  }
+
+  renderHeatmap(fr);
+  renderCompare(fr);
+
   renderTable(fr);
   update8DLauncher(fr);
+}
+
+/* ---------------- CARTE DE CHALEUR ---------------- */
+let heatDim='pc';
+const HEAT_LABELS={pc:'source',eq:'équipe',sh:'shift'};
+function renderHeatmap(fr){
+  document.getElementById('heat-dimname').textContent=HEAT_LABELS[heatDim];
+  const weeks=[...new Set(fr.map(r=>r.w))].filter(w=>w!=null).sort((a,b)=>a-b);
+  // valeurs de la dimension (lignes) : top 8 par quantité, hors vides
+  let dimVals=sumBy(fr.filter(r=>r[heatDim]&&!BAD_VALS.includes(r[heatDim])), heatDim).map(([k])=>k);
+  if(heatDim!=='pc') dimVals=dimVals.slice(0,8); else dimVals=CATS.filter(c=>dimVals.includes(c));
+  const el=document.getElementById('heat');
+  if(!weeks.length||!dimVals.length){ el.innerHTML=`<div class="shift-empty" style="margin:8px 0">Pas assez de données pour cette dimension (${HEAT_LABELS[heatDim]}).</div>`; document.getElementById('heat-scale').innerHTML=''; document.getElementById('heat-sub').textContent=''; return; }
+  // matrice valeur[dim][week]
+  const mat={}; dimVals.forEach(d=>mat[d]={});
+  let mx=0;
+  fr.forEach(r=>{ const d=r[heatDim]; if(mat[d]&&r.w!=null){ mat[d][r.w]=(mat[d][r.w]||0)+r.q; if(mat[d][r.w]>mx) mx=mat[d][r.w]; } });
+  const cellColor=v=>{ if(!v) return 'transparent'; const t=0.12+0.88*(v/(mx||1)); return `rgba(251,90,106,${t.toFixed(3)})`; };
+  // en-tête colonnes
+  let html=`<div class="heat-row"><div class="heat-corner"></div>${weeks.map(w=>`<div class="heat-colh">S${w}</div>`).join('')}</div>`;
+  dimVals.forEach(d=>{
+    const icon=heatDim==='pc'?(CAT_ICON[d]||'')+' ':'';
+    html+=`<div class="heat-row"><div class="heat-lbl" title="${esc(d)}">${icon}${esc(d)}</div>${
+      weeks.map(w=>{const v=mat[d][w]||0;return `<div class="heat-cell" style="background:${cellColor(v)}" title="S${w} · ${esc(d)} : ${fmt(v)} pcs"></div>`;}).join('')}</div>`;
+  });
+  el.innerHTML=html;
+  document.getElementById('heat-scale').innerHTML=`<span>0</span><span class="bar"></span><span>${fmt(mx)} pcs</span><span style="margin-left:12px;color:var(--mid)">${dimVals.length} lignes × ${weeks.length} semaines</span>`;
+  document.getElementById('heat-sub').textContent=`max ${fmt(mx)} pcs / cellule`;
+}
+
+/* ---------------- COMPARATIF MOIS N vs N-1 ---------------- */
+const MONTH_FR=['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+function renderCompare(fr){
+  const box=document.getElementById('cmpBox'), title=document.getElementById('cmp-title');
+  const months=[...new Set(fr.map(r=>r.m))].filter(m=>m!=null).sort((a,b)=>a-b);
+  if(months.length<2){ title.textContent='Mois N vs N-1'; box.innerHTML=`<div class="cmp-empty">Sélectionne une période couvrant <b>au moins 2 mois</b> pour afficher la comparaison (filtre Mois/Semaine/Année).</div>`; return; }
+  const mN=months[months.length-1], mP=months[months.length-2];
+  const yN=(fr.find(r=>r.m===mN)||{}).y, yP=(fr.find(r=>r.m===mP)||{}).y;
+  title.textContent=`${MONTH_FR[mN]} ${yN||''} vs ${MONTH_FR[mP]} ${yP||''}`;
+  const rN=fr.filter(r=>r.m===mN), rP=fr.filter(r=>r.m===mP);
+  const qN=rN.reduce((a,r)=>a+r.q,0), qP=rP.reduce((a,r)=>a+r.q,0);
+  const eN=rN.length, eP=rP.length;
+  const pct=(a,b)=>b?Math.round((a-b)/b*100):null;
+  const metric=(k,vN,vP,unit,higherBad=true)=>{
+    const d=pct(vN,vP);
+    return `<div class="cmp-metric"><div class="cmp-m-k">${k}</div><div class="cmp-m-row">
+      <span class="cmp-m-v">${fmt(vN)}${unit?`<span style="font-size:12px;color:var(--mid)"> ${unit}</span>`:''}</span>
+      ${deltaBadge(d,higherBad)}</div><div class="cmp-m-prev">préc. ${fmt(vP)}${unit?' '+unit:''}</div></div>`;
+  };
+  // PPM/scrap si les mois sont dans la plage File 2 (1..5)
+  let ppmMetric='';
+  const pidxN=mN-1, pidxP=mP-1;
+  if(pidxN>=0&&pidxN<DATA.ppm.months.length&&pidxP>=0&&pidxP<DATA.ppm.months.length){
+    const ppN=DATA.ppm.production[pidxN]?Math.round(DATA.ppm.qty.Total[pidxN]/DATA.ppm.production[pidxN]*1e6):null;
+    const ppP=DATA.ppm.production[pidxP]?Math.round(DATA.ppm.qty.Total[pidxP]/DATA.ppm.production[pidxP]*1e6):null;
+    if(ppN!=null&&ppP!=null) ppmMetric=metric('PPM (File 2)',ppN,ppP,'ppm',true);
+  }
+  // top movers : variation de quantité par nature
+  const aggN=new Map(sumBy(rN,'na')), aggP=new Map(sumBy(rP,'na'));
+  const allNat=new Set([...aggN.keys(),...aggP.keys()]);
+  const movers=[...allNat].map(n=>({n,d:(aggN.get(n)||0)-(aggP.get(n)||0)})).filter(m=>m.d!==0);
+  const up=movers.filter(m=>m.d>0).sort((a,b)=>b.d-a.d).slice(0,4);
+  const down=movers.filter(m=>m.d<0).sort((a,b)=>a.d-b.d).slice(0,4);
+  const moverRow=(m,bad)=>`<div class="mover"><span class="mover-n" title="${esc(m.n)}">${esc(m.n.length>34?m.n.slice(0,33)+'…':m.n)}</span><span class="mover-d" style="color:${bad?'var(--crimson)':'var(--green)'}">${m.d>0?'+':''}${fmt(m.d)} pcs</span></div>`;
+  box.innerHTML=`
+    <div class="cmp-metrics">
+      ${metric('Quantité défaut',qN,qP,'pcs',true)}
+      ${metric('Événements',eN,eP,'',true)}
+      ${metric('Moyenne / événement',Math.round(eN?qN/eN:0),Math.round(eP?qP/eP:0),'pcs',true)}
+      ${ppmMetric}
+    </div>
+    <div class="cmp-movers">
+      <div class="cmp-mv-col"><div class="cmp-mv-h" style="color:var(--crimson)">▲ Plus fortes hausses</div>${up.length?up.map(m=>moverRow(m,true)).join(''):'<div class="cmp-empty">Aucune hausse</div>'}</div>
+      <div class="cmp-mv-col"><div class="cmp-mv-h" style="color:var(--green)">▼ Plus fortes baisses</div>${down.length?down.map(m=>moverRow(m,false)).join(''):'<div class="cmp-empty">Aucune baisse</div>'}</div>
+    </div>`;
 }
 
 /* ---------------- TABLE ---------------- */
@@ -2150,6 +2345,12 @@ wireChartFilter('chMType', ()=>charts.mtype, 'mtype');
 wireChartFilter('chSite',  ()=>charts.site,  'site');
 wireChartFilter('chProj',  ()=>charts.proj,  'project');
 wireChartFilter('chClass', ()=>charts.cls,   'pclass');
+
+/* toggle dimension de la carte de chaleur */
+document.querySelectorAll('.heat-tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.heat-tab').forEach(x=>x.classList.toggle('on',x===t));
+  heatDim=t.dataset.hd; renderHeatmap(applyFilters());
+}));
 
 /* ---- BOOT ---- */
 const _savedTheme=lsGet(LS.theme,'dark');

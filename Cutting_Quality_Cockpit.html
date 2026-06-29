@@ -450,6 +450,15 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
 
 .print-head{display:none}
 
+/* ===== Bloc N° CAO (lookup production + PPM exact) ===== */
+.cao-box{background:linear-gradient(100deg,var(--panel2),var(--panel));border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:11px;padding:13px 14px;margin-bottom:16px}
+.cao-grid{display:grid;grid-template-columns:1.25fr 1fr 1.2fr auto;gap:12px;align-items:end}
+.cao-ppm{display:flex;flex-direction:column;justify-content:center;background:var(--panel3);border:1px solid var(--line);border-radius:9px;padding:6px 15px;min-width:135px}
+.cao-ppm .cpk{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700}
+.cao-ppm .cpv{font-size:19px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--hi);line-height:1.25}
+.cao-hint{font-size:11.5px;color:var(--mid);margin-top:10px;line-height:1.5}
+@media(max-width:680px){.cao-grid{grid-template-columns:1fr 1fr}.cao-ppm{grid-column:span 2}}
+
 @media print{
   @page{size:A4;margin:11mm}
   :root{--bg:#fff;--panel:#fff;--panel-grad:#fff;--panel2:#fff;--panel3:#fff;--input-bg:#fff;--pop-bg:#fff;
@@ -737,6 +746,16 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
     </div>
     <div class="modal-b">
       <div class="modal-err" id="formErr"></div>
+      <div class="cao-box">
+        <div class="cao-grid">
+          <div class="field" style="margin:0"><label>N° CAO</label><input id="f-cao" list="dl-cao" placeholder="ex. 3154152" autocomplete="off"></div>
+          <div class="field" style="margin:0"><label>Pièces bonnes</label><input type="number" id="f-good" min="0" step="1" placeholder="auto / saisie"></div>
+          <div class="field" style="margin:0"><label>Emplacement pagode</label><input id="f-pagoda" placeholder="auto / saisie"></div>
+          <div class="cao-ppm"><span class="cpk">PPM exact (ordre)</span><span class="cpv" id="f-ppm">—</span></div>
+        </div>
+        <div class="cao-hint" id="cao-hint">💡 Saisis le <b>N° CAO</b> : si le fichier de production est importé, les <b>pièces bonnes</b> et la <b>pagode</b> se remplissent automatiquement et le <b>PPM = défauts ÷ pièces bonnes × 1 000 000</b>.</div>
+      </div>
+      <datalist id="dl-cao"></datalist>
       <div class="fgrid">
         <div class="field">
           <label>Date <span class="req">*</span></label>
@@ -1063,7 +1082,7 @@ filters.year.add(2026);
 const LS = {
   claims:'lwsq_claims_v1', sups:'lwsq_sups_v1', ops:'lwsq_ops_v1',
   nat:'lwsq_natures_v1', fam:'lwsq_families_v1', tools:'lwsq_tools_v1', theme:'lwsq_theme_v1',
-  cat:'lwsq_natcat_v1', prod:'lwsq_prod_v1', ppmtgt:'lwsq_ppmtgt_v1', scraptgt:'lwsq_scraptgt_v1', prodm:'lwsq_prodm_v1'
+  cat:'lwsq_natcat_v1', prod:'lwsq_prod_v1', ppmtgt:'lwsq_ppmtgt_v1', scraptgt:'lwsq_scraptgt_v1', prodm:'lwsq_prodm_v1', prodcao:'lwsq_prodcao_v1'
 };
 let _lsOK = true;
 function lsGet(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ _lsOK=false; return def; } }
@@ -1158,6 +1177,7 @@ function ensureOperator(name){
 /* --- production journalière (pour PPM mensuel calculé) --- */
 let PROD = lsGet(LS.prod, []);   // [{d:'YYYY-MM-DD', q: production_pcs}]
 let PRODM = lsGet(LS.prodm, {}); // production par machine (dernier import) { machine: pcs }
+let PRODCAO = lsGet(LS.prodcao, {}); // index par n° CAO { cao: {good, pagoda, ma, pr} }
 /* parseur de date tolérant : Date, AAAA-MM-JJ, JJ/MM/AAAA, MM/JJ/AAAA (heure ignorée) */
 function parseAnyDate(v){
   if(v==null||v==='') return null;
@@ -1669,7 +1689,8 @@ const COLS=[
 const CSV_COLS=[
   {k:'d',t:'Date'},{k:'y',t:'Année'},{k:'m',t:'Mois'},{k:'w',t:'Semaine'},{k:'sh',t:'Shift'},{k:'si',t:'Site'},{k:'pr',t:'Client'},
   {k:'eq',t:'Équipe'},{k:'ma',t:'Machine'},{k:'mt',t:'Type machine'},{k:'to',t:'Fournisseur outils'},{k:'ou',t:"Nom d'outil"},{k:'cx',t:'Connexion'},
-  {k:'na',t:'Nature de défaut'},{k:'pc',t:'Problème'},{k:'op',t:'Opérateur'},{k:'su',t:'Superviseur'},{k:'fa',t:'Famille'},{k:'q',t:'Quantité'}
+  {k:'na',t:'Nature de défaut'},{k:'pc',t:'Problème'},{k:'op',t:'Opérateur'},{k:'su',t:'Superviseur'},{k:'fa',t:'Famille'},{k:'q',t:'Quantité'},
+  {k:'cao',t:'N° CAO'},{k:'bon',t:'Pièces bonnes'},{k:'pag',t:'Pagode'},{k:'ppm',t:'PPM ordre'}
 ];
 let sortK='d',sortDir=-1,tableRows=[];
 function chipCls(p){return p==='Stellantis'?'c-st':p==='Renault'?'c-rn':p==='Volvo'?'c-vo':'c-x';}
@@ -1778,13 +1799,40 @@ function refreshFormSources(){
   fillSelect('f-nat', [], {other:true, ph:'— Choisir d’abord la source —'});
   fillSelect('f-fam', familiesAll(), {other:true, ph:'— Choisir la famille —'});
 }
+function fillCaoDatalist(){
+  const dl=document.getElementById('dl-cao'); if(!dl) return;
+  dl.innerHTML=Object.keys(PRODCAO).slice(0,4000).map(k=>`<option value="${esc(k)}">`).join('');
+}
+function caoPPM(){
+  const q=parseInt(document.getElementById('f-qty').value)||0;
+  const g=parseInt(document.getElementById('f-good').value)||0;
+  const el=document.getElementById('f-ppm'); if(!el) return;
+  if(q>0&&g>0){ const ppm=Math.round(q/g*1e6); el.textContent=fmt(ppm); el.style.color=ppm<=DATA.ppm.ppmTarget?'var(--green)':'var(--crimson)'; }
+  else { el.textContent='—'; el.style.color='var(--hi)'; }
+}
+function caoLookup(){
+  const cao=document.getElementById('f-cao').value.trim();
+  const hint=document.getElementById('cao-hint');
+  if(!cao){ if(hint){hint.innerHTML='💡 Saisis le <b>N° CAO</b> : si le fichier de production est importé, les <b>pièces bonnes</b> et la <b>pagode</b> se remplissent automatiquement et le <b>PPM = défauts ÷ pièces bonnes × 1 000 000</b>.';hint.style.color='var(--mid)';} caoPPM(); return; }
+  const info=PRODCAO[cao];
+  if(info){
+    document.getElementById('f-good').value=info.good||'';
+    document.getElementById('f-pagoda').value=info.pagoda||'';
+    const mach=document.getElementById('f-mach'); if(mach && !mach.value && info.ma) mach.value=info.ma;
+    if(hint){ hint.innerHTML=`✅ CAO trouvé — <b>${fmt(info.good||0)}</b> pièces bonnes${info.pagoda?` · pagode <b>${esc(info.pagoda)}</b>`:''}${info.ma?` · machine <b>${esc(info.ma)}</b>`:''}${info.pr?` · projet <b>${esc(info.pr)}</b>`:''}`; hint.style.color='var(--green)'; }
+  } else {
+    if(hint){ hint.innerHTML='⚠️ N° CAO introuvable dans le fichier de production — saisis les <b>pièces bonnes</b> manuellement, ou importe le fichier (⚙️ Gestion → Production → Importer Excel).'; hint.style.color='var(--amber)'; }
+  }
+  caoPPM();
+}
 function openModal(){
-  refreshFormSources();
+  refreshFormSources(); fillCaoDatalist();
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
-  ['f-qty','f-site','f-team','f-mach','f-tool','f-outils','f-cx'].forEach(id=>document.getElementById(id).value='');
+  ['f-qty','f-site','f-team','f-mach','f-tool','f-outils','f-cx','f-cao','f-good','f-pagoda'].forEach(id=>document.getElementById(id).value='');
   ['f-shift','f-proj','f-op','f-sup','f-pc','f-nat','f-fam'].forEach(id=>document.getElementById(id).value='');
   ['f-op-new','f-sup-new','f-nat-new','f-fam-new'].forEach(id=>{const e=document.getElementById(id);e.value='';e.style.display='none';e.classList.remove('bad');});
   F_IDS.forEach(id=>markBad(id,false));
+  caoLookup();
   document.getElementById('formErr').classList.remove('show');
   modalBk.classList.add('show');
 }
@@ -1792,6 +1840,9 @@ function closeModal(){modalBk.classList.remove('show');}
 document.getElementById('openAdd').addEventListener('click',openModal);
 document.getElementById('closeAdd').addEventListener('click',closeModal);
 document.getElementById('cancelAdd').addEventListener('click',closeModal);
+document.getElementById('f-cao').addEventListener('input',caoLookup);
+document.getElementById('f-good').addEventListener('input',caoPPM);
+document.getElementById('f-qty').addEventListener('input',caoPPM);
 modalBk.addEventListener('click',e=>{if(e.target===modalBk)closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
@@ -1822,6 +1873,13 @@ document.getElementById('submitAdd').addEventListener('click',()=>{
     op:op, sh:fieldVal('f-shift'), na:nat, su:sup, fa:fam,
     q:parseInt(fieldVal('f-qty')), _u:1
   };
+  // N° CAO + pièces bonnes + pagode (optionnels) → PPM exact de l'ordre
+  const cao=document.getElementById('f-cao').value.trim();
+  const good=parseInt(document.getElementById('f-good').value)||0;
+  const pagoda=document.getElementById('f-pagoda').value.trim();
+  if(cao) rec.cao=cao;
+  if(good>0){ rec.bon=good; rec.ppm=Math.round(rec.q/good*1e6); }
+  if(pagoda) rec.pag=pagoda;
   decorate(rec);
   // persistance des référentiels
   pushRef(NAT_EXTRA, LS.nat, nat);
@@ -1835,7 +1893,8 @@ document.getElementById('submitAdd').addEventListener('click',()=>{
   closeModal(); render();
   const visible=filters.year.size===0||filters.year.has(rec.y);
   const where=_lsOK?'enregistrée':'ajoutée (stockage local indisponible — en mémoire)';
-  toast(visible?`Réclamation ${where} — ${fmt(rec.q)} pcs, S${rec.w}`:`Ajoutée (année ${rec.y}) — ajuste le filtre Année pour la voir`,!visible);
+  const ppmTxt=rec.ppm?` · PPM ${fmt(rec.ppm)}`:'';
+  toast(visible?`Réclamation ${where} — ${fmt(rec.q)} pcs, S${rec.w}${ppmTxt}`:`Ajoutée (année ${rec.y}) — ajuste le filtre Année pour la voir`,!visible);
 });
 
 /* ============================================================
@@ -2399,13 +2458,26 @@ function importProdExcel(file){
       const endCol = hdr.findIndex(h=>/actual end|date de fin r|fin r[eé]elle/.test(h));
       const crCol  = hdr.findIndex(h=>/creation date|date de cr[eé]ation/.test(h));
       const pendCol= hdr.findIndex(h=>/planned end|fin pr[eé]vue/.test(h));
-      const isMES = (wsCol>=0 || gpCol>=0) && (gpCol>=0 || qCol2>=0);
+      const caoCol = hdr.findIndex(h=>/cao ?no|n[°o]? ?cao|^cao/.test(h));
+      const pagCol = hdr.findIndex(h=>/pagoda|pagode/.test(h));
+      const prCol  = hdr.findIndex(h=>/^project$|^projet$/.test(h));
+      const isMES = (wsCol>=0 || gpCol>=0 || caoCol>=0) && (gpCol>=0 || qCol2>=0);
       if(isMES){
         const qSrc = gpCol>=0 ? gpCol : qCol2;              // pcs produites = Good Parts (sinon Quantity)
         const dSrc = endCol>=0 ? endCol : (pendCol>=0?pendCol:crCol);
-        const byDay=new Map(), byMach={}; let usedQty=0, noDate=0;
+        const byDay=new Map(), byMach={}, caoMap={}; let usedQty=0, noDate=0;
         for(let i=1;i<rows.length;i++){
           const r=rows[i]; if(!r) continue;
+          // lookup par CAO (toujours, même si non produit) : pièces bonnes + pagode + machine + projet
+          if(caoCol>=0){
+            const cao=String(r[caoCol]==null?'':r[caoCol]).trim();
+            if(cao){ caoMap[cao]={
+              good: gpCol>=0?Math.round(num(r[gpCol])):0,
+              pagoda: pagCol>=0?String(r[pagCol]==null?'':r[pagCol]).trim():'',
+              ma: wsCol>=0?String(r[wsCol]==null?'':r[wsCol]).trim():'',
+              pr: prCol>=0?String(r[prCol]==null?'':r[prCol]).trim().split(/\s{2,}/)[0]:''
+            }; }
+          }
           const q=num(r[qSrc]); if(q<=0) continue;
           usedQty+=q;
           if(wsCol>=0){ const w=String(r[wsCol]==null?'':r[wsCol]).trim(); if(w) byMach[w]=(byMach[w]||0)+q; }
@@ -2418,6 +2490,9 @@ function importProdExcel(file){
         // production par machine = snapshot du dernier import
         const mKeys=Object.keys(byMach);
         if(mKeys.length){ PRODM={}; mKeys.forEach(k=>PRODM[k]=Math.round(byMach[k])); lsSet(LS.prodm,PRODM); }
+        // lookup CAO : fusion (conserve les anciens, ajoute/maj les nouveaux)
+        const caoKeys=Object.keys(caoMap);
+        if(caoKeys.length){ caoKeys.forEach(k=>PRODCAO[k]=caoMap[k]); lsSet(LS.prodcao,PRODCAO); }
         lsSet(LS.prod,PROD); render(); renderMgTab(_mgTab);
         const src = gpCol>=0?'Good Parts':'Quantity';
         toast(`Import production (par machine · ${src}) : ${fmt(usedQty)} pcs · ${byDay.size} jour(s) · ${mKeys.length} machine(s)`);
@@ -2600,9 +2675,9 @@ function importDB(file){
 }
 function resetDB(){
   if(!confirm("Effacer toutes tes données ajoutées (réclamations, opérateurs, superviseurs, référentiels, sources, production journalière) et revenir à la base d'origine ?\n\nCette action est irréversible.")) return;
-  [LS.claims,LS.ops,LS.sups,LS.nat,LS.fam,LS.tools,LS.cat,LS.prod,LS.ppmtgt,LS.scraptgt,LS.prodm].forEach(lsDel);
+  [LS.claims,LS.ops,LS.sups,LS.nat,LS.fam,LS.tools,LS.cat,LS.prod,LS.ppmtgt,LS.scraptgt,LS.prodm,LS.prodcao].forEach(lsDel);
   DATA.rows=DATA.rows.filter(r=>!r._u);
-  OPS=[]; NAT_EXTRA=[]; FAM_EXTRA=[]; TOOL_EXTRA=[]; CAT_OVERRIDE={}; PROD=[]; PRODM={}; SCRAP_TGT=null; DATA.ppm.ppmTarget=PPM_TGT_ORIG;
+  OPS=[]; NAT_EXTRA=[]; FAM_EXTRA=[]; TOOL_EXTRA=[]; CAT_OVERRIDE={}; PROD=[]; PRODM={}; PRODCAO={}; SCRAP_TGT=null; DATA.ppm.ppmTarget=PPM_TGT_ORIG;
   SUPS=[...new Set(seedDistinct('su',true).map(s=>s.toUpperCase()))].sort((a,b)=>a.localeCompare(b,'fr')); lsSet(LS.sups,SUPS);
   DATA.rows.forEach(decorate);
   render(); renderMgTab(_mgTab); toast('Données réinitialisées');

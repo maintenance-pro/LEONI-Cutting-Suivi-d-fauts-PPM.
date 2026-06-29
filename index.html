@@ -721,8 +721,8 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
 
   <div class="foot">
     <div class="src">
-      <b style="color:var(--mid)">Sources fusionnées</b><br>
-      <span id="f-src1"></span><br><span id="f-src2"></span>
+      <b style="color:var(--brand)">✶ GitHub / Bilal. Nahil</b><br>
+      <span style="color:var(--mid)">Quality Cockpit — LEONI Wiring Systems</span>
     </div>
     <div style="text-align:right">Quality Cockpit · build single-file · LEONI Maintenance<br>
       <span style="color:var(--mid)">Filtres associatifs · données embarquées · hors-ligne</span></div>
@@ -1064,12 +1064,17 @@ filters.year.add(2026);
 const LS = {
   claims:'lwsq_claims_v1', sups:'lwsq_sups_v1', ops:'lwsq_ops_v1',
   nat:'lwsq_natures_v1', fam:'lwsq_families_v1', tools:'lwsq_tools_v1', theme:'lwsq_theme_v1',
-  cat:'lwsq_natcat_v1', prod:'lwsq_prod_v1'
+  cat:'lwsq_natcat_v1', prod:'lwsq_prod_v1', ppmtgt:'lwsq_ppmtgt_v1', scraptgt:'lwsq_scraptgt_v1'
 };
 let _lsOK = true;
 function lsGet(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ _lsOK=false; return def; } }
 function lsSet(k,val){ try{ localStorage.setItem(k,JSON.stringify(val)); return true; }catch(e){ _lsOK=false; return false; } }
 function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+
+/* --- cibles éditables (persistées) : PPM (utilisée partout) + scrap mensuel --- */
+const PPM_TGT_ORIG = DATA.ppm.ppmTarget;
+DATA.ppm.ppmTarget = (+lsGet(LS.ppmtgt, DATA.ppm.ppmTarget)) || DATA.ppm.ppmTarget;
+let SCRAP_TGT = lsGet(LS.scraptgt, null);   // pcs/mois ; null = valeurs File 2
 
 /* --- classification du défaut par SOURCE : Outils / Machine / Opérateur ---
    Chaque nature est rattachée à une source. La source par défaut est
@@ -1444,6 +1449,7 @@ function render(){
   const ppmCalc=allKeys.map(k=>ppmForKey(k));
   // cible prolongée sur tout l'axe
   charts.ppm.data.datasets[2].data=allKeys.map(()=>tgt);
+  charts.ppm.data.datasets[2].label='Cible '+tgt;
   // emphase du/des mois de la sélection (clé AAAA-MM)
   const focusKeys=new Set([...fr].map(r=>(r.d||'').slice(0,7)));
   const ppmNarrowed=filters.week.size>0||filters.month.size>0;
@@ -1507,15 +1513,16 @@ function render(){
   const domCat=clLabels[clData.indexOf(Math.max(...clData))]||'—';
   document.getElementById('cls-sub').textContent=`Source dominante : ${domCat}`;
 
-  // objectif scrap (File 2, mensuel) + ligne cible
+  // objectif scrap (File 2, mensuel) + ligne cible (éditable)
   const scR=DATA.ppm.scrapResultPcs.map(v=>v==null?null:Math.round(v));
-  const scT=DATA.ppm.scrapTargetPcs.map(v=>v==null?null:Math.round(v));
+  const useScT = SCRAP_TGT!=null && +SCRAP_TGT>0;
+  const scT = useScT ? scR.map(v=>v==null?null:Math.round(+SCRAP_TGT)) : DATA.ppm.scrapTargetPcs.map(v=>v==null?null:Math.round(v));
   charts.scrap.data.datasets[0].data=scR;
   charts.scrap.data.datasets[1].data=scT;
   charts.scrap.update();
-  const scRsum=scR.reduce((a,v)=>a+(v||0),0), scTsum=DATA.ppm.scrapTargetPcs.reduce((a,v)=>a+(v||0),0);
+  const scRsum=scR.reduce((a,v)=>a+(v||0),0), scTsum=scT.reduce((a,v)=>a+(v||0),0);
   const scPct=scTsum?Math.round((scRsum-scTsum)/scTsum*100):0;
-  document.getElementById('scrap-sub').innerHTML=`${fmt(scRsum)} pcs rebutées vs cible ${fmt(scTsum)} · <span class="delta ${scPct<=0?'down':'up'}">${scPct<=0?'▼':'▲'} ${Math.abs(scPct)}% ${scPct<=0?'sous cible ✓':'au-dessus ⚠'}</span>`;
+  document.getElementById('scrap-sub').innerHTML=`${fmt(scRsum)} pcs rebutées vs cible ${fmt(scTsum)}${useScT?' <span style="color:var(--violet)">(perso)</span>':''} · <span class="delta ${scPct<=0?'down':'up'}">${scPct<=0?'▼':'▲'} ${Math.abs(scPct)}% ${scPct<=0?'sous cible ✓':'au-dessus ⚠'}</span>`;
 
   // défauts par shift (réclamations avec shift renseigné)
   const shRows=fr.filter(r=>r.sh && !BAD_VALS.includes(r.sh));
@@ -2027,8 +2034,6 @@ document.getElementById('d8File').addEventListener('change',e=>{
 document.getElementById('m-plant').textContent=DATA.meta.plant;
 document.getElementById('m-period').textContent=DATA.meta.dmin+' → '+DATA.meta.dmax;
 document.getElementById('m-gen').textContent=DATA.meta.generated;
-document.getElementById('f-src1').textContent='① '+DATA.meta.src1;
-document.getElementById('f-src2').textContent='② '+DATA.meta.src2;
 document.getElementById('reconNote').innerHTML=`<b style="color:var(--amber)">Note fusion :</b> le détail ligne-à-ligne provient du <b>File 1</b> (terrain, filtrable). Le <b>PPM</b> et les <b>volumes de production</b> proviennent du <b>File 2</b> (suivi mensuel agrégé, Jan–Mai) — la production n'existe pas au niveau ligne, donc le PPM est un indicateur de pilotage global, pas filtrable par machine. Les écarts entre les deux comptages sont normaux (périmètre temporel + saisie manuelle).`;
 
 /* ============================================================
@@ -2097,7 +2102,16 @@ function mgProd(){
   const daily=[...PROD].map((p,i)=>({p,i})).sort((a,b)=>String(b.p.d||'').localeCompare(String(a.p.d||''))).map(({p,i})=>
     `<tr><td>${esc(p.d||'')}</td><td class="sen">${fmt(+p.q||0)}</td><td><button class="del" data-proddel="${i}">✕</button></td></tr>`).join('');
   return `
-  <div class="mg-h">🏭 Production journalière &amp; PPM mensuel</div>
+  <div class="mg-h">🎯 Cibles &amp; objectifs</div>
+  <div class="mg-p">Modifie ici les cibles utilisées dans tout le tableau de bord.</div>
+  <div class="mg-add">
+    <div class="field" style="max-width:170px"><label>Cible PPM</label><input type="number" id="tgt-ppm" min="1" step="1" value="${DATA.ppm.ppmTarget}"></div>
+    <div class="field" style="max-width:230px"><label>Cible scrap (pcs / mois)</label><input type="number" id="tgt-scrap" min="0" step="100" value="${SCRAP_TGT!=null?(+SCRAP_TGT):''}" placeholder="vide = valeurs File 2"></div>
+    <button class="mg-addbtn" id="tgt-save">💾 Enregistrer les cibles</button>
+    <button class="d8-tbtn" id="tgt-reset" style="align-self:flex-end;height:39px">↺ Scrap par défaut</button>
+  </div>
+  <div class="mg-imp-hint">La <b>cible PPM</b> pilote le graphique PPM, la synthèse, les KPI et le tableau ci-dessous. La <b>cible scrap</b> (laisser vide = valeurs d'origine File 2) pilote la ligne cible du graphique « Scrap mensuel vs cible ».</div>
+  <div class="mg-h" style="margin-top:22px">🏭 Production journalière &amp; PPM mensuel</div>
   <div class="mg-p">Saisis la <b>production de chaque jour</b> (pièces produites). Le <b>PPM mensuel</b> est calculé automatiquement : <b>PPM = défauts ÷ production × 1 000 000</b>, comparé à la cible (<b>${tgt}</b>). La courbe « PPM calculé » s'ajoute au graphique « PPM mensuel vs cible » du tableau de bord.</div>
   <div class="mg-add">
     <div class="field" style="max-width:190px"><label>Date</label><input type="date" id="prod-date"></div>
@@ -2263,6 +2277,15 @@ function wireMgTab(tab){
     $('prod-import-btn').addEventListener('click',()=>$('prod-import-file').click());
     $('prod-import-file').addEventListener('change',e=>{ if(e.target.files[0]) importProdExcel(e.target.files[0]); e.target.value=''; });
     $('prod-export-btn').addEventListener('click',exportProd);
+    $('tgt-save').addEventListener('click',()=>{
+      const p=parseInt($('tgt-ppm').value);
+      if(p>0){ DATA.ppm.ppmTarget=p; lsSet(LS.ppmtgt,p); } else { toast('Cible PPM invalide',true); return; }
+      const sv=$('tgt-scrap').value.trim();
+      if(sv===''){ SCRAP_TGT=null; lsDel(LS.scraptgt); }
+      else { const s=parseInt(sv); if(s>=0){ SCRAP_TGT=s; lsSet(LS.scraptgt,s); } }
+      render(); renderMgTab('prod'); toast('Cibles enregistrées ✓');
+    });
+    $('tgt-reset').addEventListener('click',()=>{ SCRAP_TGT=null; lsDel(LS.scraptgt); $('tgt-scrap').value=''; render(); renderMgTab('prod'); toast('Cible scrap : valeurs File 2'); });
   }
 }
 
@@ -2452,7 +2475,8 @@ function importClaimsExcel(file){
 function exportDB(){
   const payload={ _meta:{app:'CUTTING Quality Cockpit — LEONI', exported:new Date().toISOString(), version:2},
     claims:DATA.rows.filter(r=>r._u), operators:OPS, supervisors:SUPS,
-    naturesExtra:NAT_EXTRA, familiesExtra:FAM_EXTRA, toolsExtra:TOOL_EXTRA, catOverride:CAT_OVERRIDE, production:PROD };
+    naturesExtra:NAT_EXTRA, familiesExtra:FAM_EXTRA, toolsExtra:TOOL_EXTRA, catOverride:CAT_OVERRIDE, production:PROD,
+    ppmTarget:DATA.ppm.ppmTarget, scrapTarget:SCRAP_TGT };
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='cutting_cockpit_sauvegarde_'+new Date().toISOString().slice(0,10)+'.json';a.click();
@@ -2486,6 +2510,8 @@ function importDB(file){
         p.production.forEach(pr=>{ if(!pr||!pr.d) return; const ex=PROD.find(x=>x.d===pr.d); if(ex){ex.q=+pr.q||0;} else {PROD.push({d:pr.d,q:+pr.q||0}); prodAdd++;} });
         lsSet(LS.prod,PROD);
       }
+      if(typeof p.ppmTarget==='number' && p.ppmTarget>0){ DATA.ppm.ppmTarget=p.ppmTarget; lsSet(LS.ppmtgt,p.ppmTarget); }
+      if('scrapTarget' in p){ if(p.scrapTarget!=null && +p.scrapTarget>0){ SCRAP_TGT=+p.scrapTarget; lsSet(LS.scraptgt,SCRAP_TGT); } else { SCRAP_TGT=null; lsDel(LS.scraptgt); } }
       DATA.rows.forEach(decorate);
       lsSet(LS.claims, DATA.rows.filter(r=>r._u));
       render(); renderMgTab(_mgTab);
@@ -2496,9 +2522,9 @@ function importDB(file){
 }
 function resetDB(){
   if(!confirm("Effacer toutes tes données ajoutées (réclamations, opérateurs, superviseurs, référentiels, sources, production journalière) et revenir à la base d'origine ?\n\nCette action est irréversible.")) return;
-  [LS.claims,LS.ops,LS.sups,LS.nat,LS.fam,LS.tools,LS.cat,LS.prod].forEach(lsDel);
+  [LS.claims,LS.ops,LS.sups,LS.nat,LS.fam,LS.tools,LS.cat,LS.prod,LS.ppmtgt,LS.scraptgt].forEach(lsDel);
   DATA.rows=DATA.rows.filter(r=>!r._u);
-  OPS=[]; NAT_EXTRA=[]; FAM_EXTRA=[]; TOOL_EXTRA=[]; CAT_OVERRIDE={}; PROD=[];
+  OPS=[]; NAT_EXTRA=[]; FAM_EXTRA=[]; TOOL_EXTRA=[]; CAT_OVERRIDE={}; PROD=[]; SCRAP_TGT=null; DATA.ppm.ppmTarget=PPM_TGT_ORIG;
   SUPS=[...new Set(seedDistinct('su',true).map(s=>s.toUpperCase()))].sort((a,b)=>a.localeCompare(b,'fr')); lsSet(LS.sups,SUPS);
   DATA.rows.forEach(decorate);
   render(); renderMgTab(_mgTab); toast('Données réinitialisées');

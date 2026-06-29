@@ -714,7 +714,6 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
           <tbody id="tbody"></tbody>
         </table>
       </div>
-      <div class="note" id="reconNote"></div>
     </div>
 
   </div>
@@ -1175,7 +1174,24 @@ function parseAnyDate(v){
 }
 function prodByMonth(){ const m=new Map(); PROD.forEach(p=>{const k=(p.d||'').slice(0,7); if(k) m.set(k,(m.get(k)||0)+(+p.q||0));}); return m; }
 function defByMonth(){ const m=new Map(); DATA.rows.forEach(r=>{const k=(r.d||'').slice(0,7); if(k) m.set(k,(m.get(k)||0)+(+r.q||0));}); return m; }
-function ppmForKey(key){ const prod=prodByMonth().get(key)||0; if(!prod) return null; const def=defByMonth().get(key)||0; return Math.round(def/prod*1e6); }
+/* jours d'un mois ayant une production saisie (>0) */
+function prodDaysOfMonth(key){ return new Set(PROD.filter(p=>(p.d||'').slice(0,7)===key && (+p.q)>0).map(p=>p.d)); }
+/* défauts enregistrés UNIQUEMENT sur ces jours (null si aucune ligne défaut ces jours-là) */
+function defOnProdDays(key){
+  const days=prodDaysOfMonth(key); if(!days.size) return null;
+  let def=0, has=false;
+  DATA.rows.forEach(r=>{ if(days.has(r.d)){ def+=(+r.q||0); has=true; } });
+  return has?def:null;
+}
+/* PPM cohérent : défauts ÷ production sur LES MÊMES JOURS (null si pas de recouvrement) */
+function ppmForKey(key){
+  const days=prodDaysOfMonth(key); if(!days.size) return null;
+  let prod=0; PROD.forEach(p=>{ if(days.has(p.d)) prod+=(+p.q||0); });
+  if(prod<=0) return null;
+  const def=defOnProdDays(key);
+  if(def==null) return null;   // production saisie mais aucun défaut enregistré ces jours-là
+  return Math.round(def/prod*1e6);
+}
 
 function rowsFilteredExcept(exceptKey){
   return DATA.rows.filter(r=>{
@@ -1454,7 +1470,7 @@ function render(){
   const MLAB=['','Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'];
   const baseKeys=DATA.ppm.months.map((_,i)=>`2026-${String(i+1).padStart(2,'0')}`);
   const pmMap=prodByMonth();
-  const extraKeys=[...pmMap.keys()].filter(k=>!baseKeys.includes(k)).sort();
+  const extraKeys=[...pmMap.keys()].filter(k=>!baseKeys.includes(k) && ppmForKey(k)!=null).sort();
   const allKeys=[...baseKeys,...extraKeys];
   const keyLabel=k=>{const [y,m]=k.split('-');return (MLAB[+m]||k)+(y!=='2026'?" '"+y.slice(2):'');};
   charts.ppm.data.labels=allKeys.map(keyLabel);
@@ -1475,7 +1491,13 @@ function render(){
   charts.ppm.update();
   const ppmSub=document.getElementById('ppm-sub');
   const hasCalc=ppmCalc.some(v=>v!=null);
-  if(ppmSub) ppmSub.textContent = ppmNarrowed ? 'Mois de la sélection mis en évidence' : (hasCalc?`PPM réel (File 2) + calculé sur ${ppmCalc.filter(v=>v!=null).length} mois saisi(s)`:'Source : suivi PPM · saisis la production (⚙️ Gestion)');
+  const prodMonthsOutside=[...pmMap.keys()].filter(k=>ppmForKey(k)==null);
+  if(ppmSub){
+    if(ppmNarrowed) ppmSub.textContent='Mois de la sélection mis en évidence';
+    else if(hasCalc) ppmSub.textContent=`PPM réel (File 2) + calculé sur ${ppmCalc.filter(v=>v!=null).length} mois saisi(s)`;
+    else if(pmMap.size) ppmSub.textContent='Production saisie — le PPM calculé s\u2019affiche dès qu\u2019il y a des défauts sur les mêmes jours';
+    else ppmSub.textContent='Source : suivi PPM · saisis la production (⚙️ Gestion)';
+  }
 
   // pareto — coloration "vital few" (natures cumulant 80%)
   let par=sumBy(fr,'na');
@@ -2049,7 +2071,6 @@ document.getElementById('d8File').addEventListener('change',e=>{
 document.getElementById('m-plant').textContent=DATA.meta.plant;
 document.getElementById('m-period').textContent=DATA.meta.dmin+' → '+DATA.meta.dmax;
 document.getElementById('m-gen').textContent=DATA.meta.generated;
-document.getElementById('reconNote').innerHTML=`<b style="color:var(--amber)">Note fusion :</b> le détail ligne-à-ligne provient du <b>File 1</b> (terrain, filtrable). Le <b>PPM</b> et les <b>volumes de production</b> proviennent du <b>File 2</b> (suivi mensuel agrégé, Jan–Mai) — la production n'existe pas au niveau ligne, donc le PPM est un indicateur de pilotage global, pas filtrable par machine. Les écarts entre les deux comptages sont normaux (périmètre temporel + saisie manuelle).`;
 
 /* ============================================================
    GESTION — Opérateurs / Superviseurs / Référentiels / Données
@@ -2105,14 +2126,16 @@ function mgSups(){
   ${SUPS.length?`<div class="mg-pills">${pills}</div>`:`<div class="mg-empty">Aucun superviseur. Ajoute-en un ou importe un fichier Excel.</div>`}`;
 }
 function mgProd(){
-  const pm=prodByMonth(), dm=defByMonth(), tgt=DATA.ppm.ppmTarget;
+  const pm=prodByMonth(), tgt=DATA.ppm.ppmTarget;
   const months=[...pm.keys()].sort();
   const rowsM=months.map(k=>{
-    const prod=pm.get(k)||0, def=dm.get(k)||0, ppm=prod?Math.round(def/prod*1e6):null;
+    const prod=pm.get(k)||0;
+    const def=defOnProdDays(k);     // défauts sur les jours produits (cohérent avec le PPM)
+    const ppm=ppmForKey(k);         // PPM cohérent : mêmes jours
     const ok=ppm!=null&&ppm<=tgt;
-    return `<tr><td>${k}</td><td class="sen">${fmt(prod)}</td><td>${fmt(def)}</td>
+    return `<tr><td>${k}</td><td class="sen">${fmt(prod)}</td><td>${def==null?'<span style="color:var(--mid)">—</span>':fmt(def)}</td>
       <td class="sen" style="color:${ppm==null?'var(--mid)':ok?'var(--green)':'var(--crimson)'}">${ppm==null?'—':fmt(ppm)}</td>
-      <td>${ppm==null?'—':`<span class="delta ${ok?'down':'up'}">${ok?'▼':'▲'} ${ok?'≤':'>'} ${tgt}</span>`}</td></tr>`;
+      <td>${ppm==null?'<span style="color:var(--mid)">pas de défaut ces jours-là</span>':`<span class="delta ${ok?'down':'up'}">${ok?'▼':'▲'} ${ok?'≤':'>'} ${tgt}</span>`}</td></tr>`;
   }).join('');
   const daily=[...PROD].map((p,i)=>({p,i})).sort((a,b)=>String(b.p.d||'').localeCompare(String(a.p.d||''))).map(({p,i})=>
     `<tr><td>${esc(p.d||'')}</td><td class="sen">${fmt(+p.q||0)}</td><td><button class="del" data-proddel="${i}">✕</button></td></tr>`).join('');

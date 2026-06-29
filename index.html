@@ -1064,7 +1064,7 @@ filters.year.add(2026);
 const LS = {
   claims:'lwsq_claims_v1', sups:'lwsq_sups_v1', ops:'lwsq_ops_v1',
   nat:'lwsq_natures_v1', fam:'lwsq_families_v1', tools:'lwsq_tools_v1', theme:'lwsq_theme_v1',
-  cat:'lwsq_natcat_v1', prod:'lwsq_prod_v1', ppmtgt:'lwsq_ppmtgt_v1', scraptgt:'lwsq_scraptgt_v1'
+  cat:'lwsq_natcat_v1', prod:'lwsq_prod_v1', ppmtgt:'lwsq_ppmtgt_v1', scraptgt:'lwsq_scraptgt_v1', prodm:'lwsq_prodm_v1'
 };
 let _lsOK = true;
 function lsGet(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ _lsOK=false; return def; } }
@@ -1158,6 +1158,21 @@ function ensureOperator(name){
 
 /* --- production journalière (pour PPM mensuel calculé) --- */
 let PROD = lsGet(LS.prod, []);   // [{d:'YYYY-MM-DD', q: production_pcs}]
+let PRODM = lsGet(LS.prodm, {}); // production par machine (dernier import) { machine: pcs }
+/* parseur de date tolérant : Date, AAAA-MM-JJ, JJ/MM/AAAA, MM/JJ/AAAA (heure ignorée) */
+function parseAnyDate(v){
+  if(v==null||v==='') return null;
+  if(v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+  const s=String(v).trim().split(/[ T]/)[0];
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if(m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
+  if(m){ let a=+m[1], b=+m[2], y=m[3], mo, da;
+    if(a>12){ da=a; mo=b; } else if(b>12){ mo=a; da=b; } else { mo=a; da=b; } // défaut MM/JJ
+    if(mo<1||mo>12||da<1||da>31) return null;
+    return `${y}-${String(mo).padStart(2,'0')}-${String(da).padStart(2,'0')}`;
+  }
+  return null;
+}
 function prodByMonth(){ const m=new Map(); PROD.forEach(p=>{const k=(p.d||'').slice(0,7); if(k) m.set(k,(m.get(k)||0)+(+p.q||0));}); return m; }
 function defByMonth(){ const m=new Map(); DATA.rows.forEach(r=>{const k=(r.d||'').slice(0,7); if(k) m.set(k,(m.get(k)||0)+(+r.q||0));}); return m; }
 function ppmForKey(key){ const prod=prodByMonth().get(key)||0; if(!prod) return null; const def=defByMonth().get(key)||0; return Math.round(def/prod*1e6); }
@@ -2101,6 +2116,9 @@ function mgProd(){
   }).join('');
   const daily=[...PROD].map((p,i)=>({p,i})).sort((a,b)=>String(b.p.d||'').localeCompare(String(a.p.d||''))).map(({p,i})=>
     `<tr><td>${esc(p.d||'')}</td><td class="sen">${fmt(+p.q||0)}</td><td><button class="del" data-proddel="${i}">✕</button></td></tr>`).join('');
+  const pmTot=Object.values(PRODM).reduce((a,b)=>a+(+b||0),0);
+  const prodMachRows=Object.entries(PRODM).sort((a,b)=>b[1]-a[1]).map(([m,v])=>
+    `<tr><td>${esc(m)}</td><td class="sen">${fmt(v)}</td><td>${pmTot?(v/pmTot*100).toFixed(1):0}%</td></tr>`).join('');
   return `
   <div class="mg-h">🎯 Cibles &amp; objectifs</div>
   <div class="mg-p">Modifie ici les cibles utilisées dans tout le tableau de bord.</div>
@@ -2121,9 +2139,12 @@ function mgProd(){
     <input type="file" id="prod-import-file" accept=".xlsx,.xls,.csv" style="display:none">
     <button class="d8-tbtn" id="prod-export-btn" style="align-self:flex-end;height:39px">⬇ Exporter (CSV)</button>
   </div>
-  <div class="mg-imp-hint">📥 Import Excel / CSV — colonne <b>Date</b> + colonne <b>Production</b> (pcs produites par jour). Une date déjà saisie est mise à jour.</div>
+  <div class="mg-imp-hint">📥 Import Excel / CSV — soit <b>Date + Production</b> (par jour), soit un <b>export coupe</b> (colonnes <b>Work Station</b>, <b>Good Parts</b>/<b>Quantity</b>, <b>Actual End Date</b>) : la production est alors agrégée automatiquement <b>par jour</b> (pour le PPM) et <b>par machine</b>.</div>
   <div class="mg-h" style="font-size:14px;margin-top:4px">PPM mensuel calculé vs cible (${tgt})</div>
   ${months.length?`<table class="d8-tbl"><thead><tr><th>Mois</th><th>Production</th><th>Défauts</th><th>PPM calculé</th><th>vs cible</th></tr></thead><tbody>${rowsM}</tbody></table>`:`<div class="mg-empty">Aucune production saisie. Ajoute des jours ou importe un fichier Excel pour calculer le PPM.</div>`}
+  ${Object.keys(PRODM).length?`<div class="mg-h" style="font-size:14px;margin-top:20px">🏭 Production par machine <span style="font-weight:500;color:var(--mid)">— dernier import · ${Object.keys(PRODM).length} machines · ${fmt(pmTot)} pcs</span></div>
+    <div style="max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:10px"><table class="d8-tbl" style="margin:0"><thead><tr><th>Machine</th><th>Production (pcs)</th><th>Part</th></tr></thead><tbody>${prodMachRows}</tbody></table></div>
+    <button class="d8-tbtn" id="prodm-clear" style="margin-top:9px">✕ Effacer la production par machine</button>`:''}
   ${PROD.length?`<div class="mg-h" style="font-size:14px;margin-top:18px">Saisies journalières (${PROD.length})</div>
     <div style="max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:10px"><table class="d8-tbl" style="margin:0"><thead><tr><th>Date</th><th>Production (pcs)</th><th></th></tr></thead><tbody>${daily}</tbody></table></div>`:''}`;
 }
@@ -2286,6 +2307,7 @@ function wireMgTab(tab){
       render(); renderMgTab('prod'); toast('Cibles enregistrées ✓');
     });
     $('tgt-reset').addEventListener('click',()=>{ SCRAP_TGT=null; lsDel(LS.scraptgt); $('tgt-scrap').value=''; render(); renderMgTab('prod'); toast('Cible scrap : valeurs File 2'); });
+    if($('prodm-clear')) $('prodm-clear').addEventListener('click',()=>{ PRODM={}; lsDel(LS.prodm); renderMgTab('prod'); toast('Production par machine effacée'); });
   }
 }
 
@@ -2345,8 +2367,41 @@ function importProdExcel(file){
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
       if(!rows.length){ toast('Fichier vide',true); return; }
+      const hdr=rows[0].map(c=>String(c).toLowerCase().trim());
+      const num=v=>{ const n=parseFloat(String(v==null?'':v).replace(/[^\d.\-]/g,'')); return isNaN(n)?0:n; };
+      // --- détection format MES coupe (Work Station / Good Parts / Quantity + date) ---
+      const wsCol  = hdr.findIndex(h=>/work ?station|poste de travail/.test(h));
+      const gpCol  = hdr.findIndex(h=>/good ?parts|pi[eè]ces bonnes|bonnes/.test(h));
+      const qCol2  = hdr.findIndex(h=>/^quantity$|^quantit[eé]$|^qt[eé]$/.test(h));
+      const endCol = hdr.findIndex(h=>/actual end|date de fin r|fin r[eé]elle/.test(h));
+      const crCol  = hdr.findIndex(h=>/creation date|date de cr[eé]ation/.test(h));
+      const pendCol= hdr.findIndex(h=>/planned end|fin pr[eé]vue/.test(h));
+      const isMES = (wsCol>=0 || gpCol>=0) && (gpCol>=0 || qCol2>=0);
+      if(isMES){
+        const qSrc = gpCol>=0 ? gpCol : qCol2;              // pcs produites = Good Parts (sinon Quantity)
+        const dSrc = endCol>=0 ? endCol : (pendCol>=0?pendCol:crCol);
+        const byDay=new Map(), byMach={}; let usedQty=0, noDate=0;
+        for(let i=1;i<rows.length;i++){
+          const r=rows[i]; if(!r) continue;
+          const q=num(r[qSrc]); if(q<=0) continue;
+          usedQty+=q;
+          if(wsCol>=0){ const w=String(r[wsCol]==null?'':r[wsCol]).trim(); if(w) byMach[w]=(byMach[w]||0)+q; }
+          const d= dSrc>=0 ? parseAnyDate(r[dSrc]) : null;
+          if(d) byDay.set(d,(byDay.get(d)||0)+q); else noDate++;
+        }
+        // fusion production journalière (par date)
+        let addD=0,updD=0;
+        byDay.forEach((q,d)=>{ const ex=PROD.find(p=>p.d===d); if(ex){ ex.q=Math.round(q); updD++; } else { PROD.push({d,q:Math.round(q)}); addD++; } });
+        // production par machine = snapshot du dernier import
+        const mKeys=Object.keys(byMach);
+        if(mKeys.length){ PRODM={}; mKeys.forEach(k=>PRODM[k]=Math.round(byMach[k])); lsSet(LS.prodm,PRODM); }
+        lsSet(LS.prod,PROD); render(); renderMgTab(_mgTab);
+        const src = gpCol>=0?'Good Parts':'Quantity';
+        toast(`Import production (par machine · ${src}) : ${fmt(usedQty)} pcs · ${byDay.size} jour(s) · ${mKeys.length} machine(s)`);
+        return;
+      }
+      // --- format simple : Date + Production ---
       let start=0,dCol=0,qCol=1;
-      const hdr=rows[0].map(c=>String(c).toLowerCase());
       if(hdr.some(h=>/date|jour|prod|quant|pcs|pi[eè]ce|volume|fabriqu/.test(h))){
         start=1;
         const di=hdr.findIndex(h=>/date|jour/.test(h)); if(di>=0) dCol=di;
@@ -2355,7 +2410,7 @@ function importProdExcel(file){
       let added=0,upd=0;
       for(let i=start;i<rows.length;i++){
         const r=rows[i]; if(!r) continue;
-        const d=normHire(r[dCol]); const q=parseInt(String(r[qCol]==null?'':r[qCol]).replace(/[^\d]/g,''));
+        const d=parseAnyDate(r[dCol]); const q=parseInt(String(r[qCol]==null?'':r[qCol]).replace(/[^\d]/g,''));
         if(!d||!(q>0)) continue;
         const ex=PROD.find(p=>p.d===d); if(ex){ ex.q=q; upd++; } else { PROD.push({d,q}); added++; }
       }
@@ -2522,9 +2577,9 @@ function importDB(file){
 }
 function resetDB(){
   if(!confirm("Effacer toutes tes données ajoutées (réclamations, opérateurs, superviseurs, référentiels, sources, production journalière) et revenir à la base d'origine ?\n\nCette action est irréversible.")) return;
-  [LS.claims,LS.ops,LS.sups,LS.nat,LS.fam,LS.tools,LS.cat,LS.prod,LS.ppmtgt,LS.scraptgt].forEach(lsDel);
+  [LS.claims,LS.ops,LS.sups,LS.nat,LS.fam,LS.tools,LS.cat,LS.prod,LS.ppmtgt,LS.scraptgt,LS.prodm].forEach(lsDel);
   DATA.rows=DATA.rows.filter(r=>!r._u);
-  OPS=[]; NAT_EXTRA=[]; FAM_EXTRA=[]; TOOL_EXTRA=[]; CAT_OVERRIDE={}; PROD=[]; SCRAP_TGT=null; DATA.ppm.ppmTarget=PPM_TGT_ORIG;
+  OPS=[]; NAT_EXTRA=[]; FAM_EXTRA=[]; TOOL_EXTRA=[]; CAT_OVERRIDE={}; PROD=[]; PRODM={}; SCRAP_TGT=null; DATA.ppm.ppmTarget=PPM_TGT_ORIG;
   SUPS=[...new Set(seedDistinct('su',true).map(s=>s.toUpperCase()))].sort((a,b)=>a.localeCompare(b,'fr')); lsSet(LS.sups,SUPS);
   DATA.rows.forEach(decorate);
   render(); renderMgTab(_mgTab); toast('Données réinitialisées');

@@ -66,6 +66,58 @@
 #acModal .ac-act .ac-del{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.3);color:#fca5a5}
 #acModal .ac-foot{margin-top:16px;font-size:11px;color:#5f6e87;line-height:1.5;border-top:1px solid #1c2741;padding-top:12px}
 @media print{ #fbAccounts,#acModal{display:none !important} }
+/* --- Bandeau de synthèse PPM --- */
+.ppm-summary{display:flex;gap:8px;align-items:stretch;margin:2px 0 8px;flex-wrap:wrap}
+.ppm-kpi{flex:1 1 64px;background:rgba(127,127,127,.06);border:1px solid var(--line,#26324d);border-radius:10px;padding:7px 8px;text-align:center}
+.ppm-kv{font-size:21px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
+.ppm-kl{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted,#8190a8);margin-top:2px}
+.ppm-status{flex:1 1 130px;display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:12.5px;font-weight:700;padding:7px 10px;text-align:center;line-height:1.2}
+.ppm-status.bad{background:rgba(251,90,106,.12);color:var(--crimson,#fb5a6a);border:1px solid rgba(251,90,106,.4)}
+.ppm-status.good{background:rgba(52,211,153,.12);color:var(--green,#34d399);border:1px solid rgba(52,211,153,.4)}
+.ppm-months{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.ppm-mo{flex:1 1 0;min-width:46px;text-align:center;border:1px solid var(--line,#26324d);border-radius:8px;padding:4px 3px;font-variant-numeric:tabular-nums}
+.ppm-mo .mn{font-size:9.5px;color:var(--muted,#8190a8);text-transform:uppercase}
+.ppm-mo .mv{font-size:14px;font-weight:700;margin-top:1px}
+.ppm-mo.over{background:rgba(251,90,106,.08)}
+.ppm-mo.under{background:rgba(52,211,153,.08)}
+/* --- Mode télévision --- */
+#tvMode{position:fixed;inset:0;z-index:99990;display:none;flex-direction:column;background:radial-gradient(1400px 700px at 50% -5%,#16233b 0%,#070b14 65%);color:#eef2f9;font-family:'Inter',system-ui,sans-serif;padding:clamp(12px,2vw,28px)}
+#tvMode .tv-top{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid #243049;padding-bottom:clamp(8px,1.4vw,16px)}
+#tvMode .tv-brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+#tvMode .tv-logo{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:clamp(22px,3vw,40px);letter-spacing:1px;color:#fff}
+#tvMode .tv-sub{font-size:clamp(13px,1.4vw,20px);color:#9fb1cc}
+#tvMode .tv-year{font-size:clamp(11px,1.1vw,15px);color:#fb5a6a;border:1px solid #fb5a6a;border-radius:6px;padding:1px 8px}
+#tvMode .tv-time{text-align:right}
+#tvMode .tv-clock{font-size:clamp(20px,2.6vw,38px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+#tvMode .tv-date{font-size:clamp(11px,1.1vw,16px);color:#9fb1cc;text-transform:capitalize}
+#tvMode .tv-x{background:#1b2741;border:1px solid #2a3650;color:#cdd6e6;border-radius:10px;width:clamp(40px,3.4vw,52px);height:clamp(40px,3.4vw,52px);cursor:pointer;font-size:clamp(16px,1.6vw,22px);flex:none}
+#tvMode .tv-body{flex:1;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,22px);padding-top:clamp(10px,1.6vh,20px);min-height:0}
+#tvMode .tv-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));border:1px solid #243049;border-radius:18px;padding:clamp(12px,2vh,26px) clamp(18px,2.4vw,36px)}
+#tvMode .tv-hero-k{font-size:clamp(13px,1.4vw,20px);letter-spacing:2px;color:#9fb1cc;text-transform:uppercase}
+#tvMode .tv-hero-v{font-size:clamp(56px,11vw,150px);font-weight:800;line-height:.95;font-variant-numeric:tabular-nums}
+#tvMode .tv-hero-s{font-size:clamp(13px,1.5vw,22px);color:#c4d0e3;margin-top:6px}
+#tvMode .tv-badge{font-size:clamp(16px,2vw,30px);font-weight:800;letter-spacing:1px;border-radius:14px;padding:clamp(10px,1.6vh,22px) clamp(16px,2vw,34px);white-space:nowrap}
+#tvMode .tv-badge.bad{background:rgba(251,90,106,.16);color:#fb8c98;border:2px solid rgba(251,90,106,.5)}
+#tvMode .tv-badge.good{background:rgba(52,211,153,.16);color:#86efac;border:2px solid rgba(52,211,153,.5)}
+#tvMode .tv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,1.4vw,20px)}
+#tvMode .tv-tile{background:rgba(255,255,255,.03);border:1px solid #243049;border-radius:16px;padding:clamp(10px,1.6vh,22px);text-align:center;display:flex;flex-direction:column;justify-content:center}
+#tvMode .tv-tv{font-size:clamp(28px,4.5vw,60px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+#tvMode .tv-tl{font-size:clamp(11px,1.2vw,17px);color:#9fb1cc;text-transform:uppercase;letter-spacing:1px;margin-top:6px}
+#tvMode .tv-top3{text-align:left}
+#tvMode .tv-t3k{font-size:clamp(11px,1.2vw,16px);color:#9fb1cc;text-transform:uppercase;letter-spacing:1px}
+#tvMode .tv-t3v{font-size:clamp(20px,2.6vw,38px);font-weight:800;margin-top:6px;line-height:1.05;word-break:break-word}
+#tvMode .tv-t3v.tv-nat{font-size:clamp(15px,1.9vw,26px)}
+#tvMode .tv-t3s{font-size:clamp(12px,1.3vw,18px);color:#fb8c98;margin-top:4px}
+#tvMode .tv-months-wrap{background:rgba(255,255,255,.03);border:1px solid #243049;border-radius:16px;padding:clamp(10px,1.4vh,18px) clamp(14px,1.8vw,26px)}
+#tvMode .tv-months-h{font-size:clamp(12px,1.3vw,18px);color:#9fb1cc;text-transform:uppercase;letter-spacing:1px;margin-bottom:clamp(6px,1vh,12px)}
+#tvMode .tv-months{display:flex;gap:clamp(8px,1.4vw,22px);align-items:flex-end;height:clamp(90px,14vh,180px)}
+#tvMode .tv-mo{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;gap:6px}
+#tvMode .tv-bar-wrap{flex:1;width:60%;max-width:80px;display:flex;align-items:flex-end}
+#tvMode .tv-bar{width:100%;border-radius:6px 6px 0 0;min-height:2px;transition:height .4s}
+#tvMode .tv-mv{font-size:clamp(12px,1.4vw,20px);font-weight:700;font-variant-numeric:tabular-nums}
+#tvMode .tv-mn{font-size:clamp(11px,1.1vw,15px);color:#9fb1cc;text-transform:uppercase}
+#tvMode .tv-foot{border-top:1px solid #243049;padding-top:clamp(6px,1vh,12px);font-size:clamp(10px,1vw,14px);color:#6f7e96;text-align:center}
+@media print{ #tvMode,#tvBtn{display:none !important} }
 @media print{ #fbLogin,#fbSignOut{display:none !important} }
 </style>
 <style>
@@ -647,6 +699,39 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
   <div class="ph-s" id="ph-period"></div>
   <div class="ph-f" id="ph-filters"></div>
 </div>
+<!-- ========== MODE TÉLÉVISION (affichage production plein écran) ========== -->
+<div id="tvMode">
+  <div class="tv-top">
+    <div class="tv-brand"><span class="tv-logo">LEONI</span><span class="tv-sub">Quality Cockpit — Cutting</span><span class="tv-year" id="tvYear"></span></div>
+    <div class="tv-time"><div class="tv-clock" id="tvClock">--:--:--</div><div class="tv-date" id="tvDate"></div></div>
+    <button class="tv-x" id="tvClose" title="Quitter le mode TV (Échap)">✕</button>
+  </div>
+  <div class="tv-body">
+    <div class="tv-hero">
+      <div class="tv-hero-l">
+        <div class="tv-hero-k">PPM Global</div>
+        <div class="tv-hero-v" id="tvPpm">—</div>
+        <div class="tv-hero-s" id="tvPpmSub"></div>
+      </div>
+      <div class="tv-badge" id="tvBadge">—</div>
+    </div>
+    <div class="tv-grid">
+      <div class="tv-tile"><div class="tv-tv" id="tvEvents">—</div><div class="tv-tl">Événements défaut</div></div>
+      <div class="tv-tile"><div class="tv-tv" id="tvQty">—</div><div class="tv-tl">Quantité défaut (pcs)</div></div>
+      <div class="tv-tile"><div class="tv-tv" id="tvSites">—</div><div class="tv-tl">Sites actifs</div></div>
+    </div>
+    <div class="tv-grid">
+      <div class="tv-tile tv-top3"><div class="tv-t3k">🏭 Machine #1</div><div class="tv-t3v" id="tvMac">—</div><div class="tv-t3s" id="tvMacV"></div></div>
+      <div class="tv-tile tv-top3"><div class="tv-t3k">🔧 Source dominante</div><div class="tv-t3v" id="tvSrc">—</div><div class="tv-t3s" id="tvSrcV"></div></div>
+      <div class="tv-tile tv-top3"><div class="tv-t3k">⚠ Nature dominante</div><div class="tv-t3v tv-nat" id="tvNat">—</div><div class="tv-t3s" id="tvNatV"></div></div>
+    </div>
+    <div class="tv-months-wrap">
+      <div class="tv-months-h">PPM mensuel vs cible</div>
+      <div class="tv-months" id="tvMonths"></div>
+    </div>
+  </div>
+  <div class="tv-foot"><span id="tvUpd"></span> · LEONI Wiring Systems · synchronisation temps réel</div>
+</div>
 <div class="wrap">
 
   <!-- COMMAND BAR -->
@@ -667,6 +752,7 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
       <div class="metaitem"><div class="k">Période</div><div class="v" id="m-period">—</div></div>
       <div class="metaitem"><div class="k">Mise à jour</div><div class="v" id="m-gen">—</div></div>
       <button class="themetgl" id="themeTgl"><span class="ic">☀️</span><span class="tt">Clair</span></button>
+      <button class="themetgl" id="tvBtn" title="Mode télévision — affichage plein écran pour la production"><span class="ic">📺</span><span class="tt">TV</span></button>
       <button class="themetgl" id="fbAccounts" title="Gérer les comptes & accès" style="display:none"><span class="ic">👤</span><span class="tt">Comptes</span></button>
       <button class="themetgl" id="fbSignOut" title="Se déconnecter" style="display:none"><span class="ic">⎋</span><span class="tt">Quitter</span></button>
       <div class="sys" title="État de la synchronisation cloud"><span class="dot" id="fbDot" style="background:#f87171"></span><span class="t" id="fbDotT">LOCAL</span></div>
@@ -713,6 +799,13 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
     <div class="card col5">
       <div class="ch"><div class="ti"><span class="eyebrow">Pilotage</span><h3>PPM mensuel vs cible</h3></div>
         <div class="sub" id="ppm-sub">Source : suivi PPM</div></div>
+      <div class="ppm-summary" id="ppmSummary">
+        <div class="ppm-kpi"><div class="ppm-kv" id="ppmCurVal">—</div><div class="ppm-kl">PPM actuel</div></div>
+        <div class="ppm-kpi"><div class="ppm-kv" id="ppmTgtVal">—</div><div class="ppm-kl">Cible</div></div>
+        <div class="ppm-kpi"><div class="ppm-kv" id="ppmGapVal">—</div><div class="ppm-kl">Écart</div></div>
+        <div class="ppm-status" id="ppmStatus">—</div>
+      </div>
+      <div class="ppm-months" id="ppmMonths"></div>
       <div class="cv h280"><canvas id="chPPM"></canvas></div>
     </div>
 
@@ -775,7 +868,7 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
 
     <div class="card col7">
       <div class="ch"><div class="ti"><span class="eyebrow">Top contributeurs</span><h3>Par type de machine</h3></div>
-        <div class="sub">Préfixe du code machine (M, T, A…)</div></div>
+        <div class="sub">Type réel de machine (préfixe M/T/A si non mappé)</div></div>
       <div class="cv h280"><canvas id="chMType"></canvas></div>
     </div>
 
@@ -860,6 +953,12 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
       <button class="x" id="closeAdd">✕</button>
     </div>
     <div class="modal-b">
+      <div class="claim-io" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line,#26324d)">
+        <button type="button" class="d8-tbtn" id="claimImpBtn" title="Ajouter plusieurs réclamations depuis un fichier Excel / CSV">⬆ Importer Excel (plusieurs)</button>
+        <input type="file" id="claimImpFile" accept=".xlsx,.xls,.csv" style="display:none">
+        <button type="button" class="d8-tbtn" id="claimExpBtn" title="Exporter toutes les réclamations enregistrées en Excel">⬇ Exporter Excel</button>
+        <span style="font-size:11px;color:#8190a8;flex:1 1 240px">Colonnes reconnues : <b>Date</b> + <b>Quantité</b> (obligatoires), puis Machine, Nature, Client, Site, Équipe, Shift, Superviseur, Opérateur, Famille…</span>
+      </div>
       <div class="modal-err" id="formErr"></div>
       <div class="cao-box">
         <div class="cao-grid">
@@ -1197,7 +1296,7 @@ filters.year.add(2026);
 const LS = {
   claims:'lwsq_claims_v1', sups:'lwsq_sups_v1', ops:'lwsq_ops_v1',
   nat:'lwsq_natures_v1', fam:'lwsq_families_v1', tools:'lwsq_tools_v1', theme:'lwsq_theme_v1',
-  cat:'lwsq_natcat_v1', prod:'lwsq_prod_v1', ppmtgt:'lwsq_ppmtgt_v1', scraptgt:'lwsq_scraptgt_v1', prodm:'lwsq_prodm_v1', prodcao:'lwsq_prodcao_v1'
+  cat:'lwsq_natcat_v1', prod:'lwsq_prod_v1', ppmtgt:'lwsq_ppmtgt_v1', scraptgt:'lwsq_scraptgt_v1', prodm:'lwsq_prodm_v1', prodcao:'lwsq_prodcao_v1', machtype:'lwsq_machtype_v1'
 };
 let _lsOK = true;
 function lsGet(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ _lsOK=false; return def; } }
@@ -1231,10 +1330,14 @@ function setCat(na,cat){ const k=(na||'').toLowerCase().trim(); if(!k) return; C
 const CAT_COL={'Outils':'#fb5a6a','Machine':'#38bdf8','Opérateur':'#f7b733'};
 const CAT_ICON={'Outils':'🔧','Machine':'⚙️','Opérateur':'👷'};
 
-/* --- type de machine = préfixe alpha du code (M22 -> M, T115 -> T) --- */
+/* --- type de machine : mapping réel importé (M735 -> CC64), sinon préfixe alpha (M22 -> M) --- */
+let MACH_TYPE = lsGet(LS.machtype, {});   // { 'M735':'CC64', 'T39':'K488S', ... }
 function machineType(ma){
   if(!ma||['Inconnue','NA','—'].includes(ma)) return 'Inconnue';
-  const m=String(ma).match(/^[A-Za-z]+/); return m?m[0].toUpperCase():'Autre';
+  const key=String(ma).trim();
+  if(MACH_TYPE[key]) return MACH_TYPE[key];
+  if(MACH_TYPE[key.toUpperCase()]) return MACH_TYPE[key.toUpperCase()];
+  const m=key.match(/^[A-Za-z]+/); return m?m[0].toUpperCase():'Autre';
 }
 
 /* --- décoration : champs dérivés pc (source défaut) + mt (type machine) --- */
@@ -1633,6 +1736,24 @@ function render(){
     else if(pmMap.size) ppmSub.textContent='Production saisie — le PPM calculé s\u2019affiche dès qu\u2019il y a des défauts sur les mêmes jours';
     else ppmSub.textContent='Source : suivi PPM · saisis la production (⚙️ Gestion)';
   }
+  /* --- bandeau de synthèse PPM (lisibilité) --- */
+  (function(){
+    const cur=Math.round(ppmG), gap=Math.round(ppmG-tgt), over=ppmG>tgt;
+    const cCol=over?'var(--crimson,#fb5a6a)':'var(--green,#34d399)';
+    const cv=document.getElementById('ppmCurVal'); if(cv){ cv.textContent=fmt(cur); cv.style.color=cCol; }
+    const tv=document.getElementById('ppmTgtVal'); if(tv){ tv.textContent=fmt(tgt); tv.style.color='var(--green,#34d399)'; }
+    const gv=document.getElementById('ppmGapVal'); if(gv){ gv.textContent=(gap>0?'+':'')+fmt(gap); gv.style.color=cCol; }
+    const st=document.getElementById('ppmStatus'); if(st){ st.className='ppm-status '+(over?'bad':'good'); st.textContent=over?('⚠ '+fmt(Math.abs(gap))+' PPM au-dessus de la cible'):('✓ '+fmt(Math.abs(gap))+' PPM sous la cible'); }
+    const mo=document.getElementById('ppmMonths');
+    if(mo){
+      const moVals=DATA.ppm.months.map((mn,i)=>{ const q=DATA.ppm.qty.Total[i]||0,p=DATA.ppm.production[i]||0; return {mn, v:p?Math.round(q/p*1e6):null}; });
+      mo.innerHTML=moVals.map(x=>{
+        if(x.v==null) return '<div class="ppm-mo"><div class="mn">'+x.mn+'</div><div class="mv" style="color:var(--muted,#8190a8)">—</div></div>';
+        const cls=x.v>tgt?'over':'under', col=x.v>tgt?'var(--crimson,#fb5a6a)':'var(--green,#34d399)';
+        return '<div class="ppm-mo '+cls+'"><div class="mn">'+x.mn+'</div><div class="mv" style="color:'+col+'">'+fmt(x.v)+'</div></div>';
+      }).join('');
+    }
+  })();
 
   // pareto — coloration "vital few" (natures cumulant 80%)
   let par=sumBy(fr,'na');
@@ -1953,6 +2074,11 @@ function openModal(){
 }
 function closeModal(){modalBk.classList.remove('show');}
 document.getElementById('openAdd').addEventListener('click',openModal);
+(function(){
+  var ib=document.getElementById('claimImpBtn'), ifl=document.getElementById('claimImpFile'), eb=document.getElementById('claimExpBtn');
+  if(ib&&ifl){ ib.addEventListener('click',function(){ ifl.click(); }); ifl.addEventListener('change',function(e){ if(e.target.files[0]) importClaimsExcel(e.target.files[0]); e.target.value=''; }); }
+  if(eb){ eb.addEventListener('click',function(){ exportClaimsXlsx(); }); }
+})();
 document.getElementById('closeAdd').addEventListener('click',closeModal);
 document.getElementById('cancelAdd').addEventListener('click',closeModal);
 document.getElementById('f-cao').addEventListener('input',caoLookup);
@@ -2371,6 +2497,13 @@ function mgRefs(){
     <button class="d8-tbtn" id="ref-export-btn">⬇ Exporter Excel</button>
   </div>
   <div class="mg-imp-hint">📥 Import Excel — feuille <b>Natures</b> (colonnes <b>Nature</b> + <b>Source</b>) et/ou feuille <b>Familles</b> (colonne <b>Famille</b>). L'export produit un .xlsx avec ces deux feuilles.</div>
+  <div class="mg-add" style="margin-bottom:6px;margin-top:12px">
+    <button class="d8-tbtn" id="mt-import-btn">⬆ Importer Type de machine</button>
+    <input type="file" id="mt-import-file" accept=".xlsx,.xls,.csv" style="display:none">
+    <button class="d8-tbtn" id="mt-clear-btn">🗑 Réinitialiser le mapping</button>
+    <span style="font-size:12px;color:#8190a8;align-self:center" id="mt-count"></span>
+  </div>
+  <div class="mg-imp-hint">🛠️ Import Excel / CSV — colonnes <b>Machine</b> + <b>Type de machine</b> (ex. M735 → CC64). Le vrai type remplace alors le préfixe (M, T, A…) dans le graphique « Par type de machine », les filtres et le heatmap.</div>
   <div class="mg-add">
     <div class="field"><label>Nouvelle nature de défaut</label><input id="nat-name" placeholder="ex. Sertissage décentré"></div>
     <div class="field" style="max-width:180px"><label>Source</label><select id="nat-cat">${CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
@@ -2472,6 +2605,12 @@ function wireMgTab(tab){
     $('ref-import-btn').addEventListener('click',()=>$('ref-import-file').click());
     $('ref-import-file').addEventListener('change',e=>{ if(e.target.files[0]) importRefsExcel(e.target.files[0]); e.target.value=''; });
     $('ref-export-btn').addEventListener('click',exportRefsXlsx);
+    if($('mt-import-btn')){
+      $('mt-import-btn').addEventListener('click',()=>$('mt-import-file').click());
+      $('mt-import-file').addEventListener('change',e=>{ if(e.target.files[0]) importMachTypeExcel(e.target.files[0]); e.target.value=''; });
+      $('mt-clear-btn').addEventListener('click',()=>{ if(confirm('Réinitialiser le mapping Type de machine (revenir au préfixe M/T/A) ?')){ MACH_TYPE={}; lsDel(LS.machtype); DATA.rows.forEach(decorate); render(); renderMgTab('refs'); toast('Mapping type de machine réinitialisé'); } });
+      const c=$('mt-count'); if(c){ const n=Object.keys(MACH_TYPE).length; c.textContent=n?(n+' machine(s) mappée(s)'):'Aucun mapping — préfixe utilisé'; }
+    }
   }
   if(tab==='data'){
     $('mgExport2').addEventListener('click',exportDB);
@@ -2671,6 +2810,35 @@ function exportClaimsXlsx(){
   dlXlsx([{name:'Défauts',rows}],'defauts_cutting.xlsx');
 }
 /* import référentiels : natures (+ source) et familles */
+function importMachTypeExcel(file){
+  if(typeof XLSX==='undefined'){ toast('Librairie Excel non chargée',true); return; }
+  const rd=new FileReader();
+  rd.onload=e=>{ try{
+    const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+    if(!rows.length){ toast('Fichier vide',true); return; }
+    const hdr=rows[0].map(c=>String(c).toLowerCase().trim());
+    let im=hdr.findIndex(h=>/machine|work\s*station|poste/.test(h)); if(im<0) im=0;
+    let it=hdr.findIndex(h=>/type.*machine|machine.*type|mod[eè]le|^type$/.test(h));
+    if(it<0){ toast('Colonne « Type de machine » introuvable',true); return; }
+    let n=0;
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i]; if(!r) continue;
+      const m=String(r[im]==null?'':r[im]).trim();
+      const t=String(r[it]==null?'':r[it]).trim();
+      if(!m||!t) continue;
+      MACH_TYPE[m]=t; n++;
+    }
+    if(!n){ toast('Aucune ligne « Machine + Type » valide',true); return; }
+    lsSet(LS.machtype, MACH_TYPE);
+    DATA.rows.forEach(decorate);
+    render(); renderMgTab('refs');
+    toast('Type de machine importé : '+Object.keys(MACH_TYPE).length+' machine(s) mappée(s)');
+  }catch(err){ toast('Erreur de lecture du fichier Excel',true); } };
+  rd.readAsArrayBuffer(file);
+}
+
 function importRefsExcel(file){
   if(typeof XLSX==='undefined'){ toast('Librairie Excel non chargée',true); return; }
   const rd=new FileReader();
@@ -2868,6 +3036,58 @@ initCharts();
 render();
 window._booted=true;
 
+/* ===================== MODE TÉLÉVISION ===================== */
+(function(){
+  function tvCompute(){
+    const yr=Math.max.apply(null, DATA.rows.map(r=>+r.y||0));
+    const rows=DATA.rows.filter(r=>(+r.y||0)===yr);
+    let qty=0; const byNa={}, byMa={}, byPc={}, sites={};
+    rows.forEach(r=>{ const q=+r.q||0; qty+=q;
+      if(r.na) byNa[r.na]=(byNa[r.na]||0)+q;
+      if(r.ma && !['Inconnue','NA','—'].includes(r.ma)) byMa[r.ma]=(byMa[r.ma]||0)+q;
+      if(r.pc) byPc[r.pc]=(byPc[r.pc]||0)+q;
+      if(r.si && r.si!=='Inconnu') sites[r.si]=1;
+    });
+    const top=o=>{ let k=null,v=-1; for(const x in o){ if(o[x]>v){v=o[x];k=x;} } return k!=null?[k,v]:null; };
+    return { yr, events:rows.length, qty, nat:top(byNa), mac:top(byMa), src:top(byPc), sites:Object.keys(sites).length,
+      ppm:DATA.ppm.globalPPM, tgt:DATA.ppm.ppmTarget,
+      months:DATA.ppm.months.map((mn,i)=>{ const q=DATA.ppm.qty.Total[i]||0,p=DATA.ppm.production[i]||0; return {mn, v:p?Math.round(q/p*1e6):null}; }) };
+  }
+  const F=(typeof fmt==='function')?fmt:(n=>String(n));
+  function set(id,v){ const e=document.getElementById(id); if(e) e.textContent=v; }
+  function tvRender(){
+    const m=document.getElementById('tvMode'); if(!m||m.style.display==='none'||m.style.display==='') return;
+    const d=tvCompute(), over=d.ppm>d.tgt;
+    set('tvYear','Année '+d.yr);
+    const pe=document.getElementById('tvPpm'); if(pe){ pe.textContent=F(Math.round(d.ppm)); pe.style.color=over?'#fb6776':'#4ade80'; }
+    set('tvPpmSub','Cible '+F(d.tgt)+' · '+(over?('▲ '+F(Math.round(d.ppm-d.tgt))+' au-dessus'):'▼ sous la cible'));
+    const bd=document.getElementById('tvBadge'); if(bd){ bd.className='tv-badge '+(over?'bad':'good'); bd.textContent=over?'HORS CIBLE':'CONFORME'; }
+    set('tvEvents',F(d.events)); set('tvQty',F(d.qty)); set('tvSites',F(d.sites));
+    set('tvMac',d.mac?d.mac[0]:'—'); set('tvMacV',d.mac?F(d.mac[1])+' pcs':'');
+    set('tvSrc',d.src?d.src[0]:'—'); set('tvSrcV',d.src?F(d.src[1])+' pcs':'');
+    set('tvNat',d.nat?d.nat[0]:'—'); set('tvNatV',d.nat?F(d.nat[1])+' pcs':'');
+    const maxV=Math.max.apply(null,[d.tgt].concat(d.months.map(x=>x.v||0)))||1;
+    const mb=document.getElementById('tvMonths');
+    if(mb) mb.innerHTML=d.months.map(x=>{
+      const h=x.v==null?0:Math.max(2,Math.round(x.v/maxV*100));
+      const col=x.v==null?'#3a4a66':(x.v>d.tgt?'#fb6776':'#4ade80');
+      return '<div class="tv-mo"><div class="tv-bar-wrap"><div class="tv-bar" style="height:'+h+'%;background:'+col+'"></div></div><div class="tv-mv">'+(x.v==null?'—':F(x.v))+'</div><div class="tv-mn">'+x.mn+'</div></div>';
+    }).join('');
+    const up=document.getElementById('tvUpd'); if(up) up.textContent='Mise à jour '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  }
+  function tvClock(){
+    const c=document.getElementById('tvClock'); if(c) c.textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const dd=document.getElementById('tvDate'); if(dd) dd.textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  }
+  let t1=null,t2=null;
+  function tvOpen(){ const m=document.getElementById('tvMode'); if(!m) return; m.style.display='flex'; tvRender(); tvClock(); t1=setInterval(tvClock,1000); t2=setInterval(tvRender,15000); try{ if(m.requestFullscreen) m.requestFullscreen(); }catch(e){} }
+  function tvClose(){ const m=document.getElementById('tvMode'); if(m) m.style.display='none'; if(t1)clearInterval(t1); if(t2)clearInterval(t2); t1=t2=null; try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){} }
+  const b=document.getElementById('tvBtn'); if(b) b.addEventListener('click',tvOpen);
+  const x=document.getElementById('tvClose'); if(x) x.addEventListener('click',tvClose);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const m=document.getElementById('tvMode'); if(m&&m.style.display==='flex') tvClose(); } });
+})();
+/* ===================== FIN MODE TV ===================== */
+
 /* ===================== FIREBASE · SYNCHRONISATION TEMPS RÉEL =====================
    Stockage partagé multi-postes (Realtime Database · europe-west1).
    Sécurité : authentification e-mail / mot de passe — règles RTDB { ".read":"auth!=null", ".write":"auth!=null" }.
@@ -2888,7 +3108,7 @@ window._booted=true;
     measurementId: "G-PFYPG23JY2"
   };
   // Clés répliquées vers le cloud (le thème reste propre à chaque poste)
-  const FB_KEYS = [LS.claims, LS.sups, LS.ops, LS.nat, LS.fam, LS.tools, LS.cat, LS.prod, LS.ppmtgt, LS.scraptgt, LS.prodm, LS.prodcao];
+  const FB_KEYS = [LS.claims, LS.sups, LS.ops, LS.nat, LS.fam, LS.tools, LS.cat, LS.prod, LS.ppmtgt, LS.scraptgt, LS.prodm, LS.prodcao, LS.machtype];
   window._FB_SYNCKEYS = new Set(FB_KEYS);
 
   const $f = id => document.getElementById(id);
@@ -2919,6 +3139,7 @@ window._booted=true;
       case LS.fam:      FAM_EXTRA = Array.isArray(val)?val:[]; break;
       case LS.tools:    TOOL_EXTRA = Array.isArray(val)?val:[]; break;
       case LS.cat:      CAT_OVERRIDE = (val && typeof val==='object')?val:{}; DATA.rows.forEach(decorate); break;
+      case LS.machtype: MACH_TYPE = (val && typeof val==='object')?val:{}; DATA.rows.forEach(decorate); break;
       case LS.ppmtgt:   DATA.ppm.ppmTarget = (+val) || PPM_TGT_ORIG; break;
       case LS.scraptgt: SCRAP_TGT = (val==null? null : val); break;
       case LS.claims:

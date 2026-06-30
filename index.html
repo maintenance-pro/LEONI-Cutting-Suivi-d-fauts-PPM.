@@ -638,6 +638,138 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
 .mg-pill .np-n{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .catsel{font-family:inherit;font-size:11px;padding:3px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--input-bg);color:var(--mid);cursor:pointer;outline:none}
 .catsel:focus{border-color:var(--accent)}
+
+/* ════════════════════════════════════════════════════════════════
+   MODERNISATION — profondeur, typographie, micro-interactions
+   Chargée en dernier · pilotée par les variables de thème (clair/sombre).
+   Aucune structure HTML ni logique JS modifiée.
+   ════════════════════════════════════════════════════════════════ */
+:root{
+  --shadow:0 1px 2px rgba(2,6,16,.32), 0 14px 32px -16px rgba(2,6,16,.66);
+  --shadow-hover:0 2px 6px rgba(2,6,16,.40), 0 26px 54px -18px rgba(2,6,16,.82);
+  --ring:0 0 0 3px rgba(91,141,239,.32);
+  --hairline:inset 0 1px 0 rgba(255,255,255,.05);
+}
+[data-theme="light"]{
+  --shadow:0 1px 2px rgba(15,27,48,.05), 0 14px 30px -16px rgba(15,27,48,.15);
+  --shadow-hover:0 3px 8px rgba(15,27,48,.10), 0 24px 50px -18px rgba(15,27,48,.22);
+  --ring:0 0 0 3px rgba(0,51,160,.18);
+  --hairline:inset 0 1px 0 rgba(255,255,255,.75);
+}
+
+html{scroll-behavior:smooth}
+body{text-rendering:optimizeLegibility}
+
+/* Cartes — rayon plus doux, profondeur multi-couche, liseré supérieur */
+.card,.topbar,.actionbar{
+  border-radius:18px;
+  box-shadow:var(--shadow),var(--hairline);
+  transition:background-color .25s ease,border-color .25s ease,color .25s ease,box-shadow .25s ease;
+}
+.card:hover{ box-shadow:var(--shadow-hover),var(--hairline); border-color:var(--line2); }
+.recon{ border-radius:18px; box-shadow:var(--shadow),var(--hairline); }
+
+/* KPI — chiffres plus grands & tabulaires, accent coloré, halo doux, survol vivant */
+.kpi{ --kpi-c:var(--accent); border-radius:16px; box-shadow:var(--shadow),var(--hairline);
+  transition:background-color .22s ease,border-color .22s ease,color .22s ease,transform .22s cubic-bezier(.4,0,.2,1),box-shadow .22s ease; }
+.kpi.k-crim{--kpi-c:var(--crimson)} .kpi.k-grn{--kpi-c:var(--green)}
+.kpi.k-amb{--kpi-c:var(--amber)} .kpi.k-vio{--kpi-c:var(--violet)}
+.kpi:hover{ transform:translateY(-3px); box-shadow:var(--shadow-hover),var(--hairline); border-color:var(--line2); }
+.kpi::after{ content:"";position:absolute;top:-55%;right:-12%;width:150px;height:150px;border-radius:50%;
+  background:radial-gradient(circle, color-mix(in srgb, var(--kpi-c) 16%, transparent), transparent 70%);
+  pointer-events:none; }
+.kpi .kv{ font-size:30px; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.kpi .kl{ letter-spacing:.13em; }
+
+/* Titres — hiérarchie plus nette */
+.ti h3,.ch h3{ letter-spacing:-.012em; }
+.eyebrow{ font-weight:700; }
+
+/* Valeurs chiffrées — alignement tabulaire */
+.rc .rv,.metaitem .v,.lst .v{ font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+
+/* Boutons & filtres — pilules modernes avec retour tactile */
+.themetgl,.fbtn{ border-radius:11px;
+  transition:transform .14s ease,background-color .15s ease,border-color .15s ease,color .15s ease,box-shadow .15s ease; }
+.themetgl:hover,.fbtn:hover{ box-shadow:var(--shadow); }
+.themetgl:active,.fbtn:active{ transform:translateY(1px); }
+.fbtn.on{ box-shadow:inset 0 0 0 1px var(--accent); }
+
+/* Focus visible — accessibilité moderne */
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,
+.field input:focus,.field select:focus,.tsearch:focus,.pop input:focus{
+  outline:none; box-shadow:var(--ring); border-color:var(--accent);
+}
+
+/* Scrollbars fines et thématisées */
+*{scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:20px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--mid);background-clip:content-box}
+
+/* Mode mouvement réduit respecté */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;scroll-behavior:auto!important}
+  .kpi:hover{transform:none}
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MODERNISATION v2 — fond aéré · en-tête premium · densité · accent bleu→cyan
+   ════════════════════════════════════════════════════════════════ */
+:root{
+  --accent-2:#22d3ee;
+  --accent-grad:linear-gradient(135deg, var(--accent), var(--accent-2));
+  --bg-dot:rgba(91,141,239,.06);
+}
+[data-theme="light"]{
+  --accent-2:#0891b2;
+  --accent-grad:linear-gradient(135deg, var(--accent), var(--accent-2));
+  --bg-dot:rgba(0,51,160,.05);
+}
+
+/* (1) Fond plus épuré et aéré — halos doux + fine trame de points (fini la grille) */
+body{
+  background-image:
+    radial-gradient(1100px 560px at 84% -12%, var(--bg-tint1), transparent 62%),
+    radial-gradient(820px 480px at -6% 0%, var(--bg-tint2), transparent 58%),
+    radial-gradient(var(--bg-dot) 1.1px, transparent 1.3px);
+  background-size:auto, auto, 32px 32px;
+  background-position:0 0, 0 0, 0 0;
+}
+
+/* (2) En-tête redessiné — compact + premium (liseré dégradé, fond légèrement teinté) */
+.topbar{
+  padding:11px 18px;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, var(--panel)), var(--panel2));
+  position:relative; overflow:hidden;
+}
+.topbar::before{ content:""; position:absolute; left:0; right:0; top:0; height:2px; background:var(--accent-grad); }
+.lmark{ font-size:30px; background:linear-gradient(95deg, var(--brand), var(--accent-2)); -webkit-background-clip:text; background-clip:text; }
+.bsep{ height:34px; }
+.themetgl{ padding:7px 13px; }
+.topmeta{ gap:8px; }
+
+/* (4) Accent bleu→cyan — barres & halos des KPI neutres en dégradé contemporain */
+.kpi:not(.k-crim):not(.k-grn):not(.k-amb):not(.k-vio){ --kpi-c:var(--accent-2); }
+.kpi:not(.k-crim):not(.k-grn):not(.k-amb):not(.k-vio)::before{ background:var(--accent-grad); }
+
+/* (3) MODE DENSITÉ — compact (le confort reste le défaut) */
+[data-density="compact"] .wrap{ padding:12px 18px 40px; }
+[data-density="compact"] .kpis{ gap:10px; margin-bottom:12px; }
+[data-density="compact"] .grid{ gap:11px; }
+[data-density="compact"] .card{ padding:13px 14px; border-radius:14px; }
+[data-density="compact"] .ch{ margin-bottom:10px; }
+[data-density="compact"] .kpi{ padding:11px 13px; border-radius:13px; }
+[data-density="compact"] .kpi .kv{ font-size:25px; }
+[data-density="compact"] .kpi .kl{ margin-bottom:5px; }
+[data-density="compact"] .kpi .ks{ margin-top:5px; }
+[data-density="compact"] .kpi::after{ width:120px; height:120px; }
+[data-density="compact"] .rc{ padding:10px 14px; }
+[data-density="compact"] .topbar{ padding:8px 14px; }
+[data-density="compact"] .actionbar{ padding:9px 13px; margin-top:10px; }
+[data-density="compact"] .cv.h300{ height:250px } [data-density="compact"] .cv.h280{ height:234px }
+[data-density="compact"] .cv.h240{ height:204px } [data-density="compact"] .cv.h220{ height:188px }
 </style>
 </head>
 <body>
@@ -751,6 +883,7 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
       <div class="metaitem"><div class="k">Plant</div><div class="v" id="m-plant">—</div></div>
       <div class="metaitem"><div class="k">Période</div><div class="v" id="m-period">—</div></div>
       <div class="metaitem"><div class="k">Mise à jour</div><div class="v" id="m-gen">—</div></div>
+      <button class="themetgl" id="densTgl" title="Densité d'affichage — Confort / Compact"><span class="ic">▤</span><span class="tt">Confort</span></button>
       <button class="themetgl" id="themeTgl"><span class="ic">☀️</span><span class="tt">Clair</span></button>
       <button class="themetgl" id="tvBtn" title="Mode télévision — affichage plein écran pour la production"><span class="ic">📺</span><span class="tt">TV</span></button>
       <button class="themetgl" id="fbAccounts" title="Gérer les comptes & accès" style="display:none"><span class="ic">👤</span><span class="tt">Comptes</span></button>
@@ -833,6 +966,35 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
         <div class="launch-r">
           <button class="launch-go" id="open8D2">📋 Ouvrir l'atelier 8D</button>
           <div class="launch-note">8D complet D0→D8 · Ishikawa 6M · 5 Pourquoi<br>pré-rempli depuis la sélection · export PDF / JSON</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card col12">
+      <div class="ch"><div class="ti"><span class="eyebrow">Analyse Pareto · Connexion</span><h3>Problèmes de connexion — 80/20</h3></div>
+        <div class="sub" id="cxpar-sub">Renseigne le champ « Connexion » dans les réclamations pour alimenter ce Pareto</div></div>
+      <div class="cv h300"><canvas id="chCxPareto"></canvas></div>
+      <div id="cxParEmpty" style="display:none;text-align:center;color:var(--dim);padding:26px 16px;font-size:13px;line-height:1.6">Aucune connexion saisie pour l'instant — ce Pareto se construira automatiquement dès que le champ <b>« Connexion »</b> sera renseigné dans les réclamations.</div>
+    </div>
+
+    <div class="card col12">
+      <div class="ch"><div class="ti"><span class="eyebrow" style="color:var(--crimson)">Résolution structurée · 8D Connexion</span><h3>Atelier 8D — connexion prioritaire</h3></div>
+        <div class="sub">Connexion la plus pénalisante détectée sur la sélection</div></div>
+      <div class="launch">
+        <div class="launch-l">
+          <div class="launch-tag">Connexion prioritaire</div>
+          <div class="launch-prob" id="cx-prob">—</div>
+          <div class="launch-stats">
+            <div class="lst"><span class="v" id="cx-qty">—</span><span class="k">Pcs défaut</span></div>
+            <div class="lst"><span class="v" id="cx-occ">—</span><span class="k">Occurrences</span></div>
+            <div class="lst"><span class="v" id="cx-mac">—</span><span class="k">Machine #1</span></div>
+            <div class="lst"><span class="v" id="cx-site">—</span><span class="k">Site #1</span></div>
+            <div class="lst"><span class="v" id="cx-share">—</span><span class="k">Part connexions</span></div>
+          </div>
+        </div>
+        <div class="launch-r">
+          <button class="launch-go" id="open8D3">📋 Ouvrir l'atelier 8D connexion</button>
+          <div class="launch-note">Même atelier 8D complet D0→D8<br>pré-rempli sur la connexion prioritaire</div>
         </div>
       </div>
     </div>
@@ -1570,6 +1732,20 @@ function initCharts(){
         y1:{position:'right',min:0,max:100,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%',color:C.amber}}
       }})});
 
+  charts.cxpareto=new Chart(document.getElementById('chCxPareto'),{type:'bar',
+    data:{labels:[],datasets:[
+      {type:'bar',label:'Quantité',data:[],backgroundColor:'rgba(56,189,248,.55)',borderColor:C.cyan,borderWidth:1,borderRadius:3,order:2,yAxisID:'y'},
+      {type:'line',label:'% cumulé',data:[],borderColor:C.amber,backgroundColor:C.amber,pointRadius:3,pointBackgroundColor:C.amber,borderWidth:2,tension:.2,order:1,yAxisID:'y1'}
+    ]},
+    options:baseOpts({
+      plugins:{legend:{display:true,labels:{usePointStyle:true,boxWidth:8,padding:14}},
+        tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y1'?' Cumul: '+c.parsed.y.toFixed(1)+'%':' Quantité: '+fmt(c.parsed.y)}}},
+      scales:{
+        x:{grid:{display:false},ticks:{maxRotation:38,minRotation:38,font:{size:9},autoSkip:false}},
+        y:{position:'left',grid:{color:tc('--chart-grid')},ticks:{callback:v=>fmt(v)},title:{display:true,text:'Quantité',color:tc('--dim')}},
+        y1:{position:'right',min:0,max:100,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%',color:C.amber}}
+      }})});
+
   charts.site=donut('chSite');
   charts.proj=donut('chProj');
   charts.team=new Chart(document.getElementById('chTeam'),{type:'bar',
@@ -1780,6 +1956,32 @@ function render(){
   charts.pareto._vals=par.map(([n])=>n);
   charts.pareto.update();
   document.getElementById('par-sub').textContent=`${par.length} natures · ${vitalCut+1} en rouge = 80% (vital few) · ⇲ double-clic = filtrer`;
+
+  // pareto CONNEXION — groupé par le champ « cx » (se remplit dès qu'une connexion est saisie)
+  (function(){
+    const cxRows=fr.filter(r=>{const v=r.cx==null?'':String(r.cx).trim();return v && !['Non renseigné','Inconnue','NA','—'].includes(v);});
+    let cxp=sumBy(cxRows,'cx');
+    const empty=document.getElementById('cxParEmpty'), sub=document.getElementById('cxpar-sub');
+    if(!cxp.length){
+      charts.cxpareto.data.labels=[]; charts.cxpareto.data.datasets[0].data=[]; charts.cxpareto.data.datasets[1].data=[]; charts.cxpareto._vals=[]; charts.cxpareto.update();
+      if(empty) empty.style.display='block';
+      if(sub) sub.textContent='Aucune connexion saisie — renseigne le champ « Connexion » dans les réclamations';
+    } else {
+      if(empty) empty.style.display='none';
+      if(cxp.length>22) cxp=cxp.slice(0,22);
+      const t=cxp.reduce((a,[,v])=>a+v,0); let rn=0;
+      const cum=cxp.map(([,v])=>{rn+=v;return t?rn/t*100:0;});
+      const vc=(()=>{const i=cum.findIndex(c=>c>=80);return i>=0?i:cxp.length-1;})();
+      charts.cxpareto.data.labels=cxp.map(([n])=>n.length>26?n.slice(0,25)+'…':n);
+      charts.cxpareto.data.datasets[0].data=cxp.map(([,v])=>v);
+      charts.cxpareto.data.datasets[0].backgroundColor=cxp.map((_,i)=> i<=vc ? C.crimson : 'rgba(147,166,196,.32)');
+      charts.cxpareto.data.datasets[1].data=cum.map(c=>+c.toFixed(1));
+      charts.cxpareto._vals=cxp.map(([n])=>n);
+      charts.cxpareto.update();
+      if(sub) sub.textContent=`${cxp.length} connexion(s) · ${vc+1} en rouge = 80% (vital few)`;
+    }
+  })();
+  update8DLauncherCx(fr);
 
   // donuts
   const st=sumBy(fr,'si');
@@ -2238,6 +2440,38 @@ function update8DLauncher(fr){
   g('lc-share').textContent=p.share.toFixed(1)+'%';
 }
 
+/* --- détection de la connexion prioritaire (même logique, groupée par cx) --- */
+function detectProblemCx(fr){
+  const rows=fr.filter(r=>{const v=r.cx==null?'':String(r.cx).trim();return v && !['Non renseigné','Inconnue','NA','—'].includes(v);});
+  if(!rows.length) return null;
+  const byCx=sumBy(rows,'cx'); const [cx,qty]=byCx[0];
+  const sub=rows.filter(r=>String(r.cx).trim()===cx);
+  const totalQty=rows.reduce((a,r)=>a+r.q,0);
+  const dates=sub.map(r=>r.d).sort();
+  const flt=(arr,bad)=>arr.filter(([k])=>k&&!bad.includes(k));
+  return {
+    nat:cx, qty, occ:sub.length, totalQty, share: totalQty?qty/totalQty*100:0,
+    dmin:dates[0], dmax:dates[dates.length-1],
+    machines:flt(sumBy(sub,'ma'),['Inconnue','NA']),
+    sites:sumBy(sub,'si'),
+    teams:flt(sumBy(sub,'eq'),['NA']),
+    sups:flt(sumBy(sub,'su'),['Non renseigné']),
+    projs:sumBy(sub,'pr'),
+    fams:flt(sumBy(sub,'fa'),['—']),
+    tools:flt(sumBy(sub,'to'),['Non renseigné']),
+  };
+}
+function update8DLauncherCx(fr){
+  const p=detectProblemCx(fr), g=id=>document.getElementById(id);
+  if(!p){ if(g('cx-prob'))g('cx-prob').textContent='Aucune connexion saisie'; ['cx-qty','cx-occ','cx-mac','cx-site','cx-share'].forEach(i=>{if(g(i))g(i).textContent='—';}); return; }
+  g('cx-prob').textContent=p.nat;
+  g('cx-qty').textContent=fmt(p.qty);
+  g('cx-occ').textContent=fmt(p.occ);
+  g('cx-mac').textContent=p.machines[0]?p.machines[0][0]:'—';
+  g('cx-site').textContent=p.sites[0]?p.sites[0][0]:'—';
+  g('cx-share').textContent=p.share.toFixed(1)+'%';
+}
+
 /* --- rendu des listes dynamiques --- */
 function rowD1(m){return `<tr><td><input class="r-role" value="${esc(m.role)}"></td><td><input class="r-nom" value="${esc(m.nom||'')}"></td><td><input class="r-fonction" value="${esc(m.fonction||'')}"></td><td><button class="del" data-del>✕</button></td></tr>`;}
 function renderD1(list){document.getElementById('d1Rows').innerHTML=(list&&list.length?list:D1_ROLES.map(r=>({role:r}))).map(rowD1).join('');}
@@ -2320,6 +2554,13 @@ function open8D(){ if(!d8Built){prefill8D(detectProblem(applyFilters()));d8Built
 function close8D(){ document.getElementById('d8Overlay').classList.remove('show'); document.body.classList.remove('d8-open'); }
 document.getElementById('open8D').addEventListener('click',open8D);
 document.getElementById('open8D2').addEventListener('click',open8D);
+function open8Dcx(){
+  const p=detectProblemCx(applyFilters());
+  if(p){ prefill8D(p); d8Built=true; }
+  else { if(!d8Built){ prefill8D(detectProblem(applyFilters())); d8Built=true; } toast('Aucune connexion saisie — renseigne le champ « Connexion » dans les réclamations',true); }
+  document.getElementById('d8Overlay').classList.add('show'); document.body.classList.add('d8-open'); document.getElementById('d8Doc').scrollTop=0;
+}
+{ const _b3=document.getElementById('open8D3'); if(_b3) _b3.addEventListener('click',open8Dcx); }
 document.getElementById('d8Close').addEventListener('click',close8D);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && document.getElementById('d8Overlay').classList.contains('show')) close8D(); });
 document.getElementById('d8Prefill').addEventListener('click',()=>{ if(confirm('Pré-remplir le 8D depuis la sélection actuelle ? Les saisies manuelles seront remplacées.')){ prefill8D(detectProblem(applyFilters())); toast('8D pré-rempli depuis la sélection'); } });
@@ -3010,6 +3251,22 @@ function applyTheme(t){
   if(window._booted){ Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}}); initCharts(); render(); }
 }
 document.getElementById('themeTgl').addEventListener('click',()=>applyTheme(curTheme==='light'?'dark':'light'));
+
+/* ---- DENSITÉ D'AFFICHAGE (confort / compact) · préférence locale par appareil ---- */
+function applyDensity(d){
+  if(d==='compact') document.documentElement.setAttribute('data-density','compact');
+  else document.documentElement.removeAttribute('data-density');
+  const b=document.getElementById('densTgl');
+  if(b){ b.querySelector('.ic').textContent=(d==='compact')?'▦':'▤'; b.querySelector('.tt').textContent=(d==='compact')?'Compact':'Confort'; }
+  try{ localStorage.setItem('lwsq_density_v1', d); }catch(e){}
+  if(window._booted){ try{ Object.values(charts).forEach(c=>{try{c.resize();}catch(e){}}); }catch(e){} }
+}
+(function(){
+  let d='confort'; try{ d=localStorage.getItem('lwsq_density_v1')||'confort'; }catch(e){}
+  applyDensity(d);
+  const b=document.getElementById('densTgl');
+  if(b) b.addEventListener('click',()=>applyDensity(document.documentElement.getAttribute('data-density')==='compact'?'confort':'compact'));
+})();
 
 /* ---- FILTRAGE PAR DOUBLE-CLIC SUR LES GRAPHIQUES ----
    Double-clic sur une barre/segment = isoler cette valeur.

@@ -1220,9 +1220,19 @@ body{
           <select id="f-fam"></select>
           <input id="f-fam-new" class="newinp" placeholder="Saisir la nouvelle famille produit" style="display:none">
         </div>
+        <div class="field full" style="margin-top:8px;padding-top:12px;border-top:1px dashed var(--line)">
+          <label style="color:var(--accent);letter-spacing:.06em">⊕ Compléments (optionnels — toutes les colonnes du registre)</label>
+        </div>
+        <div class="field" style="margin:0"><label>Process</label><input id="f-prc" placeholder="ex. COUPE"></div>
+        <div class="field" style="margin:0"><label>Type machine</label><input id="f-mt" placeholder="ex. CC64 / K355 (auto si vide)"></div>
+        <div class="field" style="margin:0"><label>Description outil</label><input id="f-oud" placeholder="ex. applicateur / matrice"></div>
+        <div class="field" style="margin:0"><label>Type d'outil</label><input id="f-out" placeholder="ex. sertissage / dénudage"></div>
+        <div class="field" style="margin:0"><label>Repère</label><input id="f-rep" placeholder="ex. WZ8242J-R02"></div>
+        <div class="field" style="margin:0"><label>AQL</label><input id="f-aql" placeholder="ex. niveau / valeur AQL"></div>
+        <div class="field" style="margin:0"><label>NB</label><input id="f-nb" placeholder="ex. nombre"></div>
       </div>
       <div class="modal-note">
-        ℹ️ <b>Semaine</b>, <b>mois</b> et <b>année</b> sont calculés depuis la date. <b>Tous les champs sont obligatoires.</b> La réclamation est ajoutée au registre, <b>enregistrée localement</b> (localStorage) et persiste au rafraîchissement — sur GitHub Pages, elle reste tant que le navigateur n'est pas vidé. Pense à <b>exporter la sauvegarde JSON</b> (⚙️ Gestion → Données) pour archiver.
+        ℹ️ <b>Semaine</b>, <b>mois</b> et <b>année</b> sont calculés depuis la date. <b>Les champs marqués <span class="req">*</span> sont obligatoires ; les compléments en bas de formulaire sont optionnels.</b> La réclamation est ajoutée au registre, <b>enregistrée localement</b> (localStorage) et persiste au rafraîchissement — sur GitHub Pages, elle reste tant que le navigateur n'est pas vidé. Pense à <b>exporter la sauvegarde JSON</b> (⚙️ Gestion → Données) pour archiver.
       </div>
     </div>
     <div class="modal-f">
@@ -2294,7 +2304,7 @@ function caoLookup(){
 function openModal(){
   refreshFormSources(); fillCaoDatalist();
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
-  ['f-qty','f-site','f-team','f-mach','f-tool','f-outils','f-cx','f-cao','f-good','f-pagoda'].forEach(id=>document.getElementById(id).value='');
+  ['f-qty','f-site','f-team','f-mach','f-tool','f-outils','f-cx','f-cao','f-good','f-pagoda','f-prc','f-mt','f-oud','f-out','f-rep','f-aql','f-nb'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   ['f-shift','f-proj','f-op','f-sup','f-pc','f-nat','f-fam'].forEach(id=>document.getElementById(id).value='');
   ['f-op-new','f-sup-new','f-nat-new','f-fam-new'].forEach(id=>{const e=document.getElementById(id);e.value='';e.style.display='none';e.classList.remove('bad');});
   F_IDS.forEach(id=>markBad(id,false));
@@ -2351,7 +2361,17 @@ document.getElementById('submitAdd').addEventListener('click',()=>{
   if(cao) rec.cao=cao;
   if(good>0){ rec.bon=good; rec.ppm=Math.round(rec.q/good*1e6); }
   if(pagoda) rec.pag=pagoda;
+  // champs complémentaires (optionnels) — toutes les colonnes du registre
+  const _fv=id=>{ const e=document.getElementById(id); return e?e.value.trim():''; };
+  const _mtv=_fv('f-mt');
+  if(_fv('f-prc')) rec.prc=_fv('f-prc');
+  if(_fv('f-oud')) rec.oud=_fv('f-oud');
+  if(_fv('f-out')) rec.out=_fv('f-out');
+  if(_fv('f-rep')) rec.rep=_fv('f-rep');
+  if(_fv('f-aql')) rec.aql=_fv('f-aql');
+  if(_fv('f-nb'))  rec.nb=_fv('f-nb');
   decorate(rec);
+  if(_mtv){ rec.mt=_mtv; MACH_TYPE[rec.ma]=_mtv; lsSet(LS.machtype,MACH_TYPE); }
   // persistance des référentiels
   pushRef(NAT_EXTRA, LS.nat, nat);
   pushRef(FAM_EXTRA, LS.fam, fam);

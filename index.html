@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0033A0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Quality Cockpit">
+<meta name="application-name" content="Quality Cockpit">
+<meta name="description" content="Quality Cockpit — tableau de bord qualité du département coupe, LEONI Wiring Systems. Projet : Oumaima Nabil.">
 <title>CUTTING · Quality Cockpit — LEONI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -883,6 +890,7 @@ body{
       <div class="metaitem"><div class="k">Plant</div><div class="v" id="m-plant">—</div></div>
       <div class="metaitem"><div class="k">Période</div><div class="v" id="m-period">—</div></div>
       <div class="metaitem"><div class="k">Mise à jour</div><div class="v" id="m-gen">—</div></div>
+      <button class="themetgl" id="pwaBtn" title="Installer l'application (téléphone / PC)" style="display:none"><span class="ic">⬇️</span><span class="tt">Installer</span></button>
       <button class="themetgl" id="densTgl" title="Densité d'affichage — Confort / Compact"><span class="ic">▤</span><span class="tt">Confort</span></button>
       <button class="themetgl" id="themeTgl"><span class="ic">☀️</span><span class="tt">Clair</span></button>
       <button class="themetgl" id="tvBtn" title="Mode télévision — affichage plein écran pour la production"><span class="ic">📺</span><span class="tt">TV</span></button>
@@ -1100,6 +1108,7 @@ body{
   <div class="foot">
     <div class="src">
       <b style="color:var(--brand)">✶ GitHub / Bilal. Nahil</b><br>
+      <span style="color:var(--brand2);font-weight:600">Projet : Oumaima Nabil</span><br>
       <span style="color:var(--mid)">Quality Cockpit — LEONI Wiring Systems</span>
     </div>
     <div style="text-align:right">Quality Cockpit · build single-file · LEONI Maintenance<br>
@@ -2132,15 +2141,22 @@ function renderCompare(fr){
 
 /* ---------------- TABLE ---------------- */
 const COLS=[
-  {k:'d',t:'Date'},{k:'w',t:'Sem',f:v=>'S'+v},{k:'sh',t:'Shift'},{k:'si',t:'Site'},{k:'pr',t:'Client',chip:true},
-  {k:'eq',t:'Équipe'},{k:'ma',t:'Machine'},{k:'to',t:'Fournisseur outils'},{k:'ou',t:"Nom d'outil"},{k:'cx',t:'Connexion'},{k:'na',t:'Nature de défaut'},{k:'pc',t:'Problème',pc:true},
-  {k:'op',t:'Opérateur'},{k:'su',t:'Superviseur'},{k:'q',t:'Qté',qty:true}
+  {k:'d',t:'Date'},{k:'y',t:'Année'},{k:'m',t:'Mois'},{k:'w',t:'Sem',f:v=>'S'+v},{k:'sh',t:'Shift'},
+  {k:'prc',t:'Process'},{k:'si',t:'Site'},{k:'pr',t:'Client',chip:true},{k:'eq',t:'Équipe'},
+  {k:'ma',t:'Machine'},{k:'mt',t:'Type machine'},{k:'to',t:'Fournisseur outils'},{k:'ou',t:"Nom d'outil"},
+  {k:'oud',t:'Description outil'},{k:'out',t:"Type d'outil"},{k:'cx',t:'Connexion'},{k:'cao',t:'N° CAO'},{k:'rep',t:'Repère'},
+  {k:'na',t:'Nature de défaut'},{k:'pc',t:'Problème',pc:true},{k:'fa',t:'Famille'},
+  {k:'op',t:'Opérateur'},{k:'su',t:'Superviseur'},{k:'aql',t:'AQL'},{k:'nb',t:'NB'},
+  {k:'bon',t:'Pièces bonnes'},{k:'pag',t:'Pagode'},{k:'ppm',t:'PPM ordre'},{k:'q',t:'Qté',qty:true}
 ];
 const CSV_COLS=[
-  {k:'d',t:'Date'},{k:'y',t:'Année'},{k:'m',t:'Mois'},{k:'w',t:'Semaine'},{k:'sh',t:'Shift'},{k:'si',t:'Site'},{k:'pr',t:'Client'},
-  {k:'eq',t:'Équipe'},{k:'ma',t:'Machine'},{k:'mt',t:'Type machine'},{k:'to',t:'Fournisseur outils'},{k:'ou',t:"Nom d'outil"},{k:'cx',t:'Connexion'},
-  {k:'na',t:'Nature de défaut'},{k:'pc',t:'Problème'},{k:'op',t:'Opérateur'},{k:'su',t:'Superviseur'},{k:'fa',t:'Famille'},{k:'q',t:'Quantité'},
-  {k:'cao',t:'N° CAO'},{k:'bon',t:'Pièces bonnes'},{k:'pag',t:'Pagode'},{k:'ppm',t:'PPM ordre'}
+  {k:'d',t:'Date'},{k:'y',t:'Année'},{k:'m',t:'Mois'},{k:'w',t:'Semaine'},{k:'sh',t:'Shift'},
+  {k:'prc',t:'Process'},{k:'si',t:'Site'},{k:'pr',t:'Client'},{k:'eq',t:'Équipe'},
+  {k:'ma',t:'Machine'},{k:'mt',t:'Type machine'},{k:'to',t:'Fournisseur outils'},{k:'ou',t:"Nom d'outil"},
+  {k:'oud',t:'Description outil'},{k:'out',t:"Type d'outil"},{k:'cx',t:'Connexion'},{k:'cao',t:'N° CAO'},{k:'rep',t:'Repère'},
+  {k:'na',t:'Nature de défaut'},{k:'pc',t:'Problème'},{k:'fa',t:'Famille'},
+  {k:'op',t:'Opérateur'},{k:'su',t:'Superviseur'},{k:'aql',t:'AQL'},{k:'nb',t:'NB'},
+  {k:'bon',t:'Pièces bonnes'},{k:'pag',t:'Pagode'},{k:'ppm',t:'PPM ordre'},{k:'q',t:'Quantité'}
 ];
 let sortK='d',sortDir=-1,tableRows=[];
 function chipCls(p){return p==='Stellantis'?'c-st':p==='Renault'?'c-rn':p==='Volvo'?'c-vo':'c-x';}
@@ -3127,10 +3143,12 @@ function importRefsExcel(file){
 /* import réclamations / défauts (en masse) */
 const CLAIM_IMPORT_COLS=[
   {k:'d',re:/^date|jour/}, {k:'q',re:/qt|quant|pcs|nombre|qty/}, {k:'sh',re:/shift|poste/},
-  {k:'si',re:/site/}, {k:'pr',re:/client|projet/}, {k:'eq',re:/[eé]quipe|team/},
-  {k:'ma',re:/machine/}, {k:'to',re:/fournisseur|supplier/}, {k:'ou',re:/nom.*outil|^outil/},
-  {k:'cx',re:/connex/}, {k:'na',re:/nature|d[eé]faut|defaut/}, {k:'op',re:/op[eé]rateur|operator/},
-  {k:'su',re:/supervis/}, {k:'fa',re:/famille|family/}
+  {k:'prc',re:/process|proc[eé]d/}, {k:'si',re:/^site|lieu|d[eé]tection/}, {k:'pr',re:/client|projet/},
+  {k:'eq',re:/[eé]quipe|team/}, {k:'ma',re:/^machine/}, {k:'mt',re:/type.*machine/},
+  {k:'to',re:/fournisseur|supplier/}, {k:'ou',re:/nom.*outil|^outil/}, {k:'oud',re:/description.*outil|desc.*outil/},
+  {k:'out',re:/type.*outil/}, {k:'cx',re:/connex/}, {k:'cao',re:/cao/}, {k:'rep',re:/^rep[eè]re|repere/},
+  {k:'na',re:/nature|d[eé]faut|defaut/}, {k:'op',re:/op[eé]rateur|operator|matricule/}, {k:'su',re:/supervis/},
+  {k:'fa',re:/famille|family/}, {k:'aql',re:/aql/}, {k:'nb',re:/^nb$/}
 ];
 function importClaimsExcel(file){
   if(typeof XLSX==='undefined'){ toast('Librairie Excel non chargée',true); return; }
@@ -3148,12 +3166,16 @@ function importClaimsExcel(file){
       const d=normHire(r[map.d]); const q=parseInt(String(r[map.q]==null?'':r[map.q]).replace(/[^\d]/g,''));
       if(!d||!(q>0)) continue;
       const dd=new Date(d+'T00:00:00'), get=k=>map[k]!==undefined?String(r[map[k]]==null?'':r[map[k]]).trim():'';
-      const na=get('na'), fa=get('fa'), su=get('su').toUpperCase(), op=get('op');
+      const na=get('na'), fa=get('fa'), su=get('su').toUpperCase(), op=get('op'), mtv=get('mt');
       const rec={ d, y:dd.getFullYear(), m:dd.getMonth()+1, w:isoWeek(dd),
         pr:get('pr')||'—', si:get('si')||'—', eq:get('eq').toUpperCase().replace(/\s+/g,'')||'NA',
         ma:get('ma')||'Inconnue', to:get('to')||'Non renseigné', ou:get('ou')||'—', cx:get('cx')||'—',
-        op:op||'—', sh:get('sh')||'', na:na||'Non précisé', su:su||'—', fa:fa||'—', q, _u:1 };
-      decorate(rec); DATA.rows.push(rec);
+        op:op||'—', sh:get('sh')||'', na:na||'Non précisé', su:su||'—', fa:fa||'—', q,
+        prc:get('prc'), rep:get('rep'), oud:get('oud'), out:get('out'), cao:get('cao'),
+        nb:get('nb'), aql:get('aql'), _u:1 };
+      decorate(rec);
+      if(mtv){ rec.mt=mtv; MACH_TYPE[rec.ma]=mtv; }
+      DATA.rows.push(rec);
       if(na) pushRef(NAT_EXTRA,LS.nat,na);
       if(fa) pushRef(FAM_EXTRA,LS.fam,fa);
       if(su) pushRef(SUPS,LS.sups,su);
@@ -3161,8 +3183,9 @@ function importClaimsExcel(file){
       added++;
     }
     lsSet(LS.claims, DATA.rows.filter(r=>r._u));
+    lsSet(LS.machtype, MACH_TYPE);
     render(); renderMgTab(_mgTab);
-    toast(`Import défauts : ${added} réclamation(s) ajoutée(s)`);
+    toast(`Import défauts : ${added} réclamation(s) ajoutée(s)${window._fbReady?' · synchronisé sur tous les postes ✓':' · enregistré localement (synchro au prochain login)'}`);
   }catch(err){ toast('Erreur de lecture du fichier Excel',true); } };
   rd.readAsArrayBuffer(file);
 }
@@ -3266,6 +3289,54 @@ function applyDensity(d){
   applyDensity(d);
   const b=document.getElementById('densTgl');
   if(b) b.addEventListener('click',()=>applyDensity(document.documentElement.getAttribute('data-density')==='compact'?'confort':'compact'));
+})();
+
+/* ===================== PWA · INSTALLATION (téléphone + PC) ===================== */
+(function(){
+  function makeIcon(size){
+    try{
+      const c=document.createElement('canvas'); c.width=c.height=size; const x=c.getContext('2d');
+      const r=Math.round(size*0.22);
+      const g=x.createLinearGradient(0,0,size,size); g.addColorStop(0,'#0033A0'); g.addColorStop(1,'#22d3ee');
+      x.fillStyle=g;
+      if(x.roundRect){ x.beginPath(); x.roundRect(0,0,size,size,r); x.fill(); } else { x.fillRect(0,0,size,size); }
+      x.fillStyle='#ffffff'; x.textAlign='center'; x.textBaseline='middle';
+      x.font='700 '+Math.round(size*0.42)+'px Arial, Helvetica, sans-serif';
+      x.fillText('CQ', size/2, size*0.55);
+      return c.toDataURL('image/png');
+    }catch(e){ return null; }
+  }
+  const icon192=makeIcon(192), icon512=makeIcon(512);
+  try{
+    const manifest={
+      name:'CUTTING · Quality Cockpit — LEONI', short_name:'Quality Cockpit',
+      description:'Tableau de bord qualité — département coupe, LEONI Wiring Systems · Projet : Oumaima Nabil',
+      start_url:location.href.split('#')[0], scope:'./', display:'standalone', orientation:'any',
+      background_color:'#070b14', theme_color:'#0033A0', lang:'fr',
+      icons:[
+        icon192?{src:icon192,sizes:'192x192',type:'image/png',purpose:'any maskable'}:null,
+        icon512?{src:icon512,sizes:'512x512',type:'image/png',purpose:'any maskable'}:null
+      ].filter(Boolean)
+    };
+    const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+    const link=document.createElement('link'); link.rel='manifest'; link.href=URL.createObjectURL(blob); document.head.appendChild(link);
+    if(icon192){ const al=document.createElement('link'); al.rel='apple-touch-icon'; al.href=icon192; document.head.appendChild(al); }
+  }catch(e){}
+
+  const btn=document.getElementById('pwaBtn');
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
+  let deferred=null;
+  const show=()=>{ if(btn) btn.style.display='inline-flex'; };
+  const hide=()=>{ if(btn) btn.style.display='none'; };
+  if(!standalone) show();
+  window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferred=e; show(); });
+  window.addEventListener('appinstalled',()=>{ deferred=null; hide(); try{toast('Application installée ✓ · disponible depuis l\u2019écran d\u2019accueil');}catch(e){} });
+  if(btn) btn.addEventListener('click',async()=>{
+    if(deferred){ deferred.prompt(); try{ await deferred.userChoice; }catch(e){} deferred=null; hide(); return; }
+    if(isIOS){ try{ toast('iPhone/iPad : appuie sur Partager ⎋ puis « Sur l\u2019écran d\u2019accueil »'); }catch(e){} return; }
+    try{ toast('Ouvre le menu du navigateur puis « Installer l\u2019application » (icône ⊕ dans la barre d\u2019adresse)'); }catch(e){}
+  });
 })();
 
 /* ---- FILTRAGE PAR DOUBLE-CLIC SUR LES GRAPHIQUES ----

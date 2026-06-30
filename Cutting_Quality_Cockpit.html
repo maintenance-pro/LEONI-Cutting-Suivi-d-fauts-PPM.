@@ -9,6 +9,65 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Saira+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Firebase (compat) : stockage Realtime Database partagé multi-postes -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<style>
+#fbLogin{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:radial-gradient(1200px 600px at 50% -10%,#16233b 0%,#0a0f1c 60%);font-family:'Inter',system-ui,sans-serif;padding:20px}
+#fbLogin .fbcard{width:100%;max-width:380px;background:#0f1626;border:1px solid #243049;border-radius:16px;padding:30px 28px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#fbLogin .fbbrand{display:flex;align-items:baseline;gap:8px;margin-bottom:18px}
+#fbLogin .fbmark{font-family:'Saira Condensed',sans-serif;font-weight:700;font-size:24px;letter-spacing:.5px;color:#fff}
+#fbLogin .fbmark sup{font-size:9px;color:#fb5a6a}
+#fbLogin .fbsub{font-size:11px;color:#7d8aa3;text-transform:uppercase;letter-spacing:2px}
+#fbLogin h2{margin:0 0 4px;font-size:18px;color:#eef2f9;font-weight:600}
+#fbLogin .fbsc{color:#fb5a6a}
+#fbLogin .fbnote{margin:0 0 22px;font-size:12px;color:#8190a8}
+#fbLogin .fblab{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8190a8;margin:0 0 6px}
+#fbLogin input{width:100%;box-sizing:border-box;background:#0a1120;border:1px solid #2a3650;color:#eef2f9;border-radius:9px;padding:12px 14px;font-size:14px;margin-bottom:16px;outline:none;transition:border-color .15s}
+#fbLogin input:focus{border-color:#fb5a6a}
+#fbLogin #fbErr{display:none;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);color:#fca5a5;font-size:12.5px;border-radius:8px;padding:9px 12px;margin-bottom:14px}
+#fbLogin #fbBtn{width:100%;background:linear-gradient(180deg,#fb5a6a,#e23b4d);color:#fff;border:0;border-radius:9px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:.3px}
+#fbLogin #fbBtn:disabled{opacity:.6;cursor:default}
+#fbLogin .fbfoot{margin:18px 0 0;font-size:11px;color:#5f6e87;text-align:center}
+#fbSignOut{cursor:pointer}
+#acModal{position:fixed;inset:0;z-index:99998;display:none;align-items:center;justify-content:center;background:rgba(6,10,18,.72);font-family:'Inter',system-ui,sans-serif;padding:20px}
+#acModal .ac-card{width:100%;max-width:680px;max-height:88vh;overflow:auto;background:#0f1626;border:1px solid #243049;border-radius:16px;padding:22px 24px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#acModal .ac-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#acModal .ac-head h2{margin:0;font-size:18px;color:#eef2f9;font-weight:600}
+#acModal .ac-close{background:#1b2741;border:1px solid #2a3650;color:#cdd6e6;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:14px}
+#acModal .ac-sub{font-size:12px;color:#8190a8;margin:4px 0 16px}
+#acModal .ac-sub code{background:#0a1120;border:1px solid #2a3650;border-radius:5px;padding:1px 6px;color:#9fb4d8;font-family:'JetBrains Mono',monospace;font-size:11px}
+#acModal .ac-section{border-top:1px solid #1c2741;padding-top:14px;margin-top:14px}
+#acModal .ac-st{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8190a8;margin-bottom:10px;font-weight:600}
+#acModal .ac-form{display:flex;flex-wrap:wrap;gap:8px}
+#acModal .ac-form input,#acModal .ac-form select{flex:1 1 150px;background:#0a1120;border:1px solid #2a3650;color:#eef2f9;border-radius:8px;padding:10px 12px;font-size:13px;outline:none;min-width:120px}
+#acModal .ac-form input:focus,#acModal .ac-form select:focus{border-color:#fb5a6a}
+#acModal .ac-form button{flex:0 0 auto;background:linear-gradient(180deg,#fb5a6a,#e23b4d);color:#fff;border:0;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer}
+#acModal .ac-form button:disabled{opacity:.6;cursor:default}
+#acModal .ac-self .ac-form button{background:#1b2741;border:1px solid #2a3650}
+#acModal .ac-msg{margin-top:12px;font-size:12.5px;border-radius:8px;padding:9px 12px}
+#acModal .ac-msg.err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);color:#fca5a5}
+#acModal .ac-msg.ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.35);color:#86efac}
+#acModal .ac-listbox{display:flex;flex-direction:column;gap:8px}
+#acModal .ac-empty{font-size:13px;color:#7d8aa3;padding:10px 0}
+#acModal .ac-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0c1322;border:1px solid #1f2b46;border-radius:10px;padding:10px 12px;flex-wrap:wrap}
+#acModal .ac-row.ac-dis{opacity:.6}
+#acModal .ac-mail{font-size:13px;color:#eef2f9;font-weight:500}
+#acModal .ac-you{font-size:10px;color:#fb5a6a;border:1px solid #fb5a6a;border-radius:5px;padding:0 5px;margin-left:6px;vertical-align:middle}
+#acModal .ac-meta{display:flex;gap:8px;align-items:center;margin-top:3px}
+#acModal .ac-badge{font-size:10px;border-radius:5px;padding:1px 7px;letter-spacing:.4px}
+#acModal .ac-badge.adm{background:rgba(251,90,106,.15);color:#fb8c98;border:1px solid rgba(251,90,106,.4)}
+#acModal .ac-badge.usr{background:rgba(56,189,248,.12);color:#7dd3fc;border:1px solid rgba(56,189,248,.35)}
+#acModal .ac-state{font-size:11px;color:#8190a8}
+#acModal .ac-act{display:flex;gap:6px;flex-wrap:wrap}
+#acModal .ac-act button{background:#172238;border:1px solid #2a3650;color:#cdd6e6;border-radius:7px;padding:6px 9px;font-size:11.5px;cursor:pointer;white-space:nowrap}
+#acModal .ac-act button:hover{border-color:#3a4a66}
+#acModal .ac-act .ac-del{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.3);color:#fca5a5}
+#acModal .ac-foot{margin-top:16px;font-size:11px;color:#5f6e87;line-height:1.5;border-top:1px solid #1c2741;padding-top:12px}
+@media print{ #fbAccounts,#acModal{display:none !important} }
+@media print{ #fbLogin,#fbSignOut{display:none !important} }
+</style>
 <style>
 :root{
   /* ----- DARK (défaut) ----- */
@@ -530,6 +589,59 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
 </style>
 </head>
 <body>
+<!-- ========== ÉCRAN DE CONNEXION SÉCURISÉ (Firebase Auth) ========== -->
+<div id="fbLogin" role="dialog" aria-modal="true">
+  <div class="fbcard">
+    <div class="fbbrand"><span class="fbmark">LEONI<sup>®</sup></span><span class="fbsub">Wiring Systems</span></div>
+    <h2><span class="fbsc">✂</span> Quality Cockpit — Cutting</h2>
+    <p class="fbnote">Accès réservé · authentification requise</p>
+    <label class="fblab" for="fbEmail">E-mail</label>
+    <input id="fbEmail" type="email" autocomplete="username" placeholder="prenom.nom@leoni.com" />
+    <label class="fblab" for="fbPass">Mot de passe</label>
+    <input id="fbPass" type="password" autocomplete="current-password" placeholder="••••••••" />
+    <div id="fbErr"></div>
+    <button id="fbBtn">Se connecter</button>
+    <p class="fbfoot">🔒 Données synchronisées en temps réel · LEONI Wiring Systems</p>
+  </div>
+</div>
+<!-- ========== GESTION DES COMPTES & ACCÈS ========== -->
+<div id="acModal" role="dialog" aria-modal="true">
+  <div class="ac-card">
+    <div class="ac-head">
+      <h2>👤 Comptes &amp; accès</h2>
+      <button id="acClose" class="ac-close" title="Fermer">✕</button>
+    </div>
+    <div class="ac-sub">Connexions au Quality Cockpit · règles RTDB <code>auth != null</code></div>
+
+    <div class="ac-section">
+      <div class="ac-st">➕ Créer un compte</div>
+      <div class="ac-form">
+        <input id="acEmail" type="email" placeholder="E-mail (prenom.nom@leoni.com)" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <input id="acPass" type="text" placeholder="Mot de passe initial (min. 6)" autocomplete="off">
+        <input id="acName" type="text" placeholder="Nom (optionnel)" autocomplete="off">
+        <select id="acRole"><option value="utilisateur">Utilisateur</option><option value="admin">Admin</option></select>
+        <button id="acCreate">Créer le compte</button>
+      </div>
+    </div>
+
+    <div id="acMsg" class="ac-msg" style="display:none"></div>
+
+    <div class="ac-section">
+      <div class="ac-st">👥 Comptes enregistrés</div>
+      <div id="acList" class="ac-listbox"></div>
+    </div>
+
+    <div class="ac-section ac-self">
+      <div class="ac-st">🔑 Mon mot de passe</div>
+      <div class="ac-form">
+        <input id="acMyPass" type="text" placeholder="Nouveau mot de passe (min. 6)" autocomplete="off">
+        <button id="acMyBtn">Changer mon mot de passe</button>
+      </div>
+    </div>
+
+    <div class="ac-foot">⚠️ La <b>suppression définitive</b> d'un login et le <b>changement d'e-mail</b> se font dans la console Firebase (Authentication → Users). Ici : créer, réinitialiser (lien par e-mail), activer/désactiver l'accès, gérer les rôles. La liste reflète les comptes créés via l'app ou s'étant déjà connectés une fois.</div>
+  </div>
+</div>
 <div class="print-head" id="printHead">
   <div class="ph-t">LEONI · Cutting Quality Cockpit — Rapport Qualité Coupe</div>
   <div class="ph-s" id="ph-period"></div>
@@ -555,6 +667,9 @@ tbody td.qty{font-family:'JetBrains Mono',monospace;color:var(--hi);font-weight:
       <div class="metaitem"><div class="k">Période</div><div class="v" id="m-period">—</div></div>
       <div class="metaitem"><div class="k">Mise à jour</div><div class="v" id="m-gen">—</div></div>
       <button class="themetgl" id="themeTgl"><span class="ic">☀️</span><span class="tt">Clair</span></button>
+      <button class="themetgl" id="fbAccounts" title="Gérer les comptes & accès" style="display:none"><span class="ic">👤</span><span class="tt">Comptes</span></button>
+      <button class="themetgl" id="fbSignOut" title="Se déconnecter" style="display:none"><span class="ic">⎋</span><span class="tt">Quitter</span></button>
+      <div class="sys" title="État de la synchronisation cloud"><span class="dot" id="fbDot" style="background:#f87171"></span><span class="t" id="fbDotT">LOCAL</span></div>
       <div class="sys"><span class="dot"></span><span class="t">SYS · OK</span></div>
     </div>
   </div>
@@ -1086,8 +1201,8 @@ const LS = {
 };
 let _lsOK = true;
 function lsGet(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v); }catch(e){ _lsOK=false; return def; } }
-function lsSet(k,val){ try{ localStorage.setItem(k,JSON.stringify(val)); return true; }catch(e){ _lsOK=false; return false; } }
-function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+function lsSet(k,val){ try{ localStorage.setItem(k,JSON.stringify(val)); }catch(e){ _lsOK=false; return false; } if(window._fbReady && window._db && window._FB_SYNCKEYS && window._FB_SYNCKEYS.has(k)){ try{ window._db.ref('cockpit/'+k).set(val===undefined?null:val); }catch(e){} } return true; }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} if(window._fbReady && window._db && window._FB_SYNCKEYS && window._FB_SYNCKEYS.has(k)){ try{ window._db.ref('cockpit/'+k).remove(); }catch(e){} } }
 
 /* --- cibles éditables (persistées) : PPM (utilisée partout) + scrap mensuel --- */
 const PPM_TGT_ORIG = DATA.ppm.ppmTarget;
@@ -2752,6 +2867,280 @@ if(_savedTheme==='light') document.documentElement.setAttribute('data-theme','li
 initCharts();
 render();
 window._booted=true;
+
+/* ===================== FIREBASE · SYNCHRONISATION TEMPS RÉEL =====================
+   Stockage partagé multi-postes (Realtime Database · europe-west1).
+   Sécurité : authentification e-mail / mot de passe — règles RTDB { ".read":"auth!=null", ".write":"auth!=null" }.
+   Résilience : le cache localStorage existant est conservé ; l'app reste utilisable
+   hors-ligne (les écritures sont mises en file et synchronisées à la reconnexion).
+   Intégration non intrusive : toutes les sauvegardes passent déjà par lsSet/lsDel,
+   désormais répliqués vers le cloud (write-through) ; chaque clé est écoutée en
+   temps réel et réinjectée dans les variables + render() à toute modification distante. */
+(function(){
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQvekutVRjNfVPFEnODUMu4Mv9navFLVs",
+    authDomain: "qualiter-af6d3.firebaseapp.com",
+    databaseURL: "https://qualiter-af6d3-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "qualiter-af6d3",
+    appId: "1:571290924932:web:29ef54b8a4b698eb4acfd1"
+  };
+  // Clés répliquées vers le cloud (le thème reste propre à chaque poste)
+  const FB_KEYS = [LS.claims, LS.sups, LS.ops, LS.nat, LS.fam, LS.tools, LS.cat, LS.prod, LS.ppmtgt, LS.scraptgt, LS.prodm, LS.prodcao];
+  window._FB_SYNCKEYS = new Set(FB_KEYS);
+
+  const $f = id => document.getElementById(id);
+  function _fbErr(t){ const e=$f('fbErr'); if(e){ e.textContent=t||''; e.style.display=t?'block':'none'; } }
+  function _setDot(ok){ const d=$f('fbDot'); if(d) d.style.background = ok?'#34d399':'#f87171'; const t=$f('fbDotT'); if(t) t.textContent = ok?'CLOUD · OK':'LOCAL'; const w=$f('fbCloudPill')||(d&&d.parentNode); if(w) w.title = ok?'Cloud connecté · synchronisation temps réel':'Hors-ligne · cache local'; }
+  function _degradeLocal(){ const o=$f('fbLogin'); if(o) o.style.display='none'; _setDot(false); }
+
+  // SDK indisponible (réseau) → on bascule en mode local pur plutôt que de bloquer l'outil
+  if(typeof firebase==='undefined'){ _degradeLocal(); return; }
+
+  try{ firebase.initializeApp(firebaseConfig); }catch(e){}
+  const db = firebase.database();
+  const auth = firebase.auth();
+  window._db = db;
+  try{ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }catch(e){}
+  try{ db.ref('.info/connected').on('value', s=>{ if(window._fbReady) _setDot(!!s.val()); }); }catch(e){}
+
+  // Application d'une mise à jour distante : maj cache + variable + rendu
+  function applyRemote(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+    switch(key){
+      case LS.prod:     PROD = Array.isArray(val)?val:[]; break;
+      case LS.prodm:    PRODM = (val && typeof val==='object')?val:{}; break;
+      case LS.prodcao:  PRODCAO = (val && typeof val==='object')?val:{}; break;
+      case LS.ops:      OPS = Array.isArray(val)?val:[]; break;
+      case LS.sups:     SUPS = Array.isArray(val)?val:SUPS; break;
+      case LS.nat:      NAT_EXTRA = Array.isArray(val)?val:[]; break;
+      case LS.fam:      FAM_EXTRA = Array.isArray(val)?val:[]; break;
+      case LS.tools:    TOOL_EXTRA = Array.isArray(val)?val:[]; break;
+      case LS.cat:      CAT_OVERRIDE = (val && typeof val==='object')?val:{}; DATA.rows.forEach(decorate); break;
+      case LS.ppmtgt:   DATA.ppm.ppmTarget = (+val) || PPM_TGT_ORIG; break;
+      case LS.scraptgt: SCRAP_TGT = (val==null? null : val); break;
+      case LS.claims:
+        for(let i=DATA.rows.length-1;i>=0;i--){ if(DATA.rows[i] && DATA.rows[i]._u) DATA.rows.splice(i,1); }
+        (Array.isArray(val)?val:[]).forEach(rec=>{ rec._u=1; DATA.rows.push(decorate(rec)); });
+        break;
+    }
+    try{ render(); }catch(e){}
+    try{ if(typeof _mgTab!=='undefined' && _mgTab) renderMgTab(_mgTab); }catch(e){}
+  }
+
+  let _started=false;
+  function startCloud(){
+    if(_started) return; _started=true;
+    window._fbReady = true; _setDot(true);
+    FB_KEYS.forEach(key=>{
+      try{
+        db.ref('cockpit/'+key).on('value', snap=>{
+          const val = snap.val();
+          if(val===null){
+            // cloud encore vide pour cette clé → on l'amorce depuis le local (migration une fois)
+            const raw = localStorage.getItem(key);
+            if(raw && raw!=='null' && raw!=='[]' && raw!=='{}'){ try{ db.ref('cockpit/'+key).set(JSON.parse(raw)); }catch(e){} }
+            return;
+          }
+          if(JSON.stringify(val)===localStorage.getItem(key)) return; // inchangé / écho de notre propre écriture
+          applyRemote(key, val);
+        });
+      }catch(e){}
+    });
+  }
+
+  function doLogin(){
+    const em=(($f('fbEmail')||{}).value||'').trim(), pw=(($f('fbPass')||{}).value||'');
+    if(!em||!pw){ _fbErr('Saisis ton e-mail et ton mot de passe.'); return; }
+    _fbErr(''); const b=$f('fbBtn'); if(b){ b.disabled=true; b.textContent='Connexion…'; }
+    auth.signInWithEmailAndPassword(em,pw).catch(err=>{
+      const M={
+        'auth/invalid-email':"E-mail invalide.",
+        'auth/user-disabled':"Ce compte est désactivé.",
+        'auth/user-not-found':"Aucun compte pour cet e-mail.",
+        'auth/wrong-password':"Mot de passe incorrect.",
+        'auth/invalid-credential':"Identifiants incorrects.",
+        'auth/too-many-requests':"Trop de tentatives. Réessaie dans quelques minutes.",
+        'auth/network-request-failed':"Problème réseau — vérifie ta connexion."
+      };
+      _fbErr(M[err.code] || ("Erreur : "+(err.code||err.message)));
+    }).finally(()=>{ const bb=$f('fbBtn'); if(bb){ bb.disabled=false; bb.textContent='Se connecter'; } });
+  }
+  (function wire(){
+    const b=$f('fbBtn'); if(b) b.addEventListener('click', doLogin);
+    const p=$f('fbPass'); if(p) p.addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+    const e=$f('fbEmail'); if(e) e.addEventListener('keydown', ev=>{ if(ev.key==='Enter'){ const pp=$f('fbPass'); if(pp) pp.focus(); } });
+    const so=$f('fbSignOut'); if(so) so.addEventListener('click', ()=>{ if(confirm('Se déconnecter du Quality Cockpit ?')) auth.signOut(); });
+  })();
+
+  /* ====================== GESTION DES COMPTES & ACCÈS ======================
+     Le SDK navigateur permet : créer un compte, envoyer un lien de réinit,
+     changer SON propre mot de passe. Il ne peut PAS lister/supprimer les autres
+     comptes (réservé à l'Admin SDK serveur) → on tient un registre dans RTDB
+     (/accounts/{uid}) et on désactive l'accès via un drapeau appliqué à la connexion.
+     Astuce clé : la création passe par une app Firebase SECONDAIRE pour ne pas
+     déconnecter l'administrateur courant. */
+  const ADMIN_EMAILS = ["admin@leoni.com"];   // ← AJOUTE ICI ton e-mail d'admin « racine »
+  let _isAdmin=false, _myAccount=null, _accounts={};
+
+  let _sec=null;
+  function _secAuth(){
+    if(!_sec){
+      _sec = firebase.initializeApp(firebase.app().options, 'fbSecondary');
+      try{ _sec.auth().setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(e){}
+    }
+    return _sec.auth();
+  }
+  function _emailOK(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+  function _acMsg(t,ok){ const m=$f('acMsg'); if(m){ m.textContent=t||''; m.className='ac-msg '+(ok?'ok':(t?'err':'')); m.style.display=t?'block':'none'; } }
+
+  function ensureSelfAccount(user, registryEmpty){
+    return db.ref('accounts/'+user.uid).once('value').then(snap=>{
+      let rec=snap.val();
+      if(!rec){
+        const seed = ADMIN_EMAILS.includes((user.email||'').toLowerCase()) || registryEmpty;
+        rec={ email:user.email||'', name:(user.displayName||''), role:seed?'admin':'utilisateur', disabled:false, createdAt:Date.now(), createdBy:'(auto)' };
+        try{ db.ref('accounts/'+user.uid).set(rec); }catch(e){}
+      }
+      return rec;
+    }).catch(()=>({ email:user.email||'', role:'utilisateur', disabled:false }));
+  }
+
+  function renderAccounts(){
+    const box=$f('acList'); if(!box) return;
+    const uids=Object.keys(_accounts||{});
+    if(!uids.length){ box.innerHTML='<div class="ac-empty">Aucun compte enregistré pour l’instant. Crée le premier ci-dessus.</div>'; return; }
+    uids.sort((a,b)=>((_accounts[a].email||'').localeCompare(_accounts[b].email||'','fr')));
+    const me = auth.currentUser ? auth.currentUser.uid : '';
+    box.innerHTML = uids.map(uid=>{
+      const a=_accounts[uid]||{}; const dis=a.disabled===true; const isAdm=a.role==='admin';
+      return '<div class="ac-row'+(dis?' ac-dis':'')+'">'
+        +'<div class="ac-main"><div class="ac-mail">'+_esc(a.email||'—')+(uid===me?' <span class="ac-you">vous</span>':'')+'</div>'
+        +'<div class="ac-meta"><span class="ac-badge '+(isAdm?'adm':'usr')+'">'+(isAdm?'Admin':'Utilisateur')+'</span>'
+        +'<span class="ac-state">'+(dis?'⛔ désactivé':'✅ actif')+'</span></div></div>'
+        +'<div class="ac-act">'
+        +'<button data-acreset="'+uid+'" title="Envoyer un lien de réinitialisation du mot de passe">🔑 Mot de passe</button>'
+        +'<button data-acrole="'+uid+'" title="Basculer Admin / Utilisateur">'+(isAdm?'↘ Utilisateur':'↗ Admin')+'</button>'
+        +'<button data-acdis="'+uid+'" title="Activer / désactiver l’accès">'+(dis?'Activer':'Désactiver')+'</button>'
+        +'<button data-acdel="'+uid+'" class="ac-del" title="Retirer du registre">🗑</button>'
+        +'</div></div>';
+    }).join('');
+  }
+  function _esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  function createAccount(){
+    if(!_isAdmin){ _acMsg('Action réservée aux administrateurs.'); return; }
+    const em=(($f('acEmail')||{}).value||'').trim().toLowerCase();
+    const pw=(($f('acPass')||{}).value||'');
+    const nm=(($f('acName')||{}).value||'').trim();
+    const rl=(($f('acRole')||{}).value||'utilisateur');
+    if(!_emailOK(em)){ _acMsg('E-mail invalide.'); return; }
+    if(pw.length<6){ _acMsg('Le mot de passe doit faire au moins 6 caractères.'); return; }
+    const b=$f('acCreate'); if(b){ b.disabled=true; b.textContent='Création…'; } _acMsg('');
+    const sa=_secAuth();
+    sa.createUserWithEmailAndPassword(em,pw).then(cred=>{
+      const uid=cred.user.uid;
+      const rec={ email:em, name:nm, role:rl, disabled:false, createdAt:Date.now(), createdBy:(auth.currentUser&&auth.currentUser.email)||'' };
+      return db.ref('accounts/'+uid).set(rec).then(()=>{ try{ sa.signOut(); }catch(e){} });
+    }).then(()=>{
+      _acMsg('Compte créé : '+em+(rl==='admin'?' (Admin)':''), true);
+      ['acEmail','acPass','acName'].forEach(id=>{ const el=$f(id); if(el) el.value=''; });
+    }).catch(err=>{
+      try{ sa.signOut(); }catch(e){}
+      const M={'auth/email-already-in-use':"Un compte existe déjà avec cet e-mail.",'auth/invalid-email':"E-mail invalide.",'auth/weak-password':"Mot de passe trop faible (min. 6 caractères).",'auth/operation-not-allowed':"Active d’abord « E-mail/Mot de passe » dans Firebase Authentication."};
+      _acMsg(M[err.code]||("Erreur : "+(err.code||err.message)));
+    }).finally(()=>{ const bb=$f('acCreate'); if(bb){ bb.disabled=false; bb.textContent='Créer le compte'; } });
+  }
+
+  function _acAction(e){
+    const t=e.target.closest('button'); if(!t) return;
+    if(!_isAdmin){ _acMsg('Action réservée aux administrateurs.'); return; }
+    let uid;
+    if((uid=t.getAttribute('data-acreset'))){
+      const a=_accounts[uid]; if(!a||!a.email) return;
+      auth.sendPasswordResetEmail(a.email).then(()=>_acMsg('Lien de réinitialisation envoyé à '+a.email, true)).catch(err=>_acMsg('Échec envoi : '+(err.code||err.message)));
+    } else if((uid=t.getAttribute('data-acrole'))){
+      const a=_accounts[uid]; if(!a) return;
+      const nv=a.role==='admin'?'utilisateur':'admin';
+      db.ref('accounts/'+uid+'/role').set(nv).then(()=>_acMsg('Rôle mis à jour : '+nv, true)).catch(err=>_acMsg('Erreur : '+(err.code||err.message)));
+    } else if((uid=t.getAttribute('data-acdis'))){
+      const a=_accounts[uid]; if(!a) return;
+      const nv=!(a.disabled===true);
+      db.ref('accounts/'+uid+'/disabled').set(nv).then(()=>_acMsg(nv?'Accès désactivé (déconnexion au prochain chargement).':'Accès réactivé.', true)).catch(err=>_acMsg('Erreur : '+(err.code||err.message)));
+    } else if((uid=t.getAttribute('data-acdel'))){
+      const a=_accounts[uid]||{};
+      if(!confirm("Retirer « "+(a.email||uid)+" » du registre ?\n\nNote : le login Firebase n’est PAS supprimé (l’utilisateur peut encore se connecter). Pour révoquer réellement l’accès, utilise « Désactiver », ou supprime le compte dans la console Firebase.")) return;
+      db.ref('accounts/'+uid).remove().then(()=>_acMsg('Compte retiré du registre.', true)).catch(err=>_acMsg('Erreur : '+(err.code||err.message)));
+    }
+  }
+
+  function changeMyPassword(){
+    const np=(($f('acMyPass')||{}).value||'');
+    if(np.length<6){ _acMsg('Le nouveau mot de passe doit faire au moins 6 caractères.'); return; }
+    const u=auth.currentUser; if(!u) return;
+    u.updatePassword(np).then(()=>{ _acMsg('Votre mot de passe a été changé.', true); const el=$f('acMyPass'); if(el) el.value=''; })
+      .catch(err=>{ _acMsg(err.code==='auth/requires-recent-login' ? 'Pour des raisons de sécurité, déconnecte-toi puis reconnecte-toi avant de changer ton mot de passe.' : ('Erreur : '+(err.code||err.message))); });
+  }
+
+  function openAccounts(){ const m=$f('acModal'); if(m){ m.style.display='flex'; renderAccounts(); _acMsg(''); } }
+  function closeAccounts(){ const m=$f('acModal'); if(m) m.style.display='none'; }
+  (function wireAccounts(){
+    const a=$f('fbAccounts'); if(a) a.addEventListener('click', openAccounts);
+    const x=$f('acClose'); if(x) x.addEventListener('click', closeAccounts);
+    const bg=$f('acModal'); if(bg) bg.addEventListener('click', e=>{ if(e.target===bg) closeAccounts(); });
+    const c=$f('acCreate'); if(c) c.addEventListener('click', createAccount);
+    const list=$f('acList'); if(list) list.addEventListener('click', _acAction);
+    const mp=$f('acMyBtn'); if(mp) mp.addEventListener('click', changeMyPassword);
+  })();
+
+  function watchAccounts(){
+    try{
+      db.ref('accounts').on('value', snap=>{
+        _accounts = snap.val()||{};
+        const u=auth.currentUser;
+        if(u){
+          _myAccount = _accounts[u.uid] || _myAccount;
+          _isAdmin = ADMIN_EMAILS.includes((u.email||'').toLowerCase()) || (_myAccount && _myAccount.role==='admin') || Object.keys(_accounts).length===0;
+          const ab=$f('fbAccounts'); if(ab) ab.style.display=_isAdmin?'':'none';
+          // révocation à chaud : si on désactive mon propre compte, je suis déconnecté
+          if(_myAccount && _myAccount.disabled===true){ try{ auth.signOut(); }catch(e){} }
+        }
+        const m=$f('acModal'); if(m && m.style.display!=='none') renderAccounts();
+      });
+    }catch(e){}
+  }
+
+  /* ---------- état d'authentification (étendu : disabled + admin + comptes) ---------- */
+  auth.onAuthStateChanged(function(user){
+    if(user){
+      db.ref('accounts').once('value').then(s=>{
+        const reg=s.val()||{};
+        return ensureSelfAccount(user, Object.keys(reg).length===0);
+      }).then(rec=>{
+        _myAccount=rec;
+        if(rec && rec.disabled===true){
+          _fbErr('Accès désactivé. Contacte un administrateur.');
+          const o=$f('fbLogin'); if(o) o.style.display='flex';
+          try{ auth.signOut(); }catch(e){}
+          return;
+        }
+        _isAdmin = ADMIN_EMAILS.includes((user.email||'').toLowerCase()) || (rec && rec.role==='admin');
+        const o=$f('fbLogin'); if(o) o.style.display='none';
+        const so=$f('fbSignOut'); if(so) so.style.display='';
+        const ab=$f('fbAccounts'); if(ab) ab.style.display=_isAdmin?'':'none';
+        startCloud();
+        watchAccounts();
+      });
+    }else{
+      window._fbReady=false; _isAdmin=false; _myAccount=null;
+      const so=$f('fbSignOut'); if(so) so.style.display='none';
+      const ab=$f('fbAccounts'); if(ab) ab.style.display='none';
+      const am=$f('acModal'); if(am) am.style.display='none';
+      const o=$f('fbLogin'); if(o) o.style.display='flex';
+      _setDot(false);
+    }
+  });
+})();
+/* ===================== FIN FIREBASE ===================== */
 
 </script>
 </body>

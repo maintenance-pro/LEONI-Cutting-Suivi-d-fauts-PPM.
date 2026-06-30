@@ -1331,12 +1331,24 @@ const CAT_COL={'Outils':'#fb5a6a','Machine':'#38bdf8','Opérateur':'#f7b733'};
 const CAT_ICON={'Outils':'🔧','Machine':'⚙️','Opérateur':'👷'};
 
 /* --- type de machine : mapping réel importé (M735 -> CC64), sinon préfixe alpha (M22 -> M) --- */
-let MACH_TYPE = lsGet(LS.machtype, {});   // { 'M735':'CC64', 'T39':'K488S', ... }
+/* Mapping type de machine INTÉGRÉ (d'après le fichier fourni) — s'applique sans import.
+   Un import (Gestion → Référentiels) ou la synchro Firebase le complètent/écrasent par machine. */
+const MACH_TYPE_SEED = {
+  "M735":"CC64","M729":"CC64","M742":"CC64","M726":"CC64",
+  "M70":"THB 804",
+  "M166":"K355","M151":"K355","M160":"K355","M157":"K355",
+  "M30":"K550","M103":"K550",
+  "T39":"K488S","T88":"K488S",
+  "T38":"Sigma 688"
+};
+let MACH_TYPE = lsGet(LS.machtype, {});   // mapping importé/synchronisé (prioritaire sur le seed)
 function machineType(ma){
   if(!ma||['Inconnue','NA','—'].includes(ma)) return 'Inconnue';
-  const key=String(ma).trim();
+  const key=String(ma).trim(), up=key.toUpperCase();
   if(MACH_TYPE[key]) return MACH_TYPE[key];
-  if(MACH_TYPE[key.toUpperCase()]) return MACH_TYPE[key.toUpperCase()];
+  if(MACH_TYPE[up]) return MACH_TYPE[up];
+  if(MACH_TYPE_SEED[key]) return MACH_TYPE_SEED[key];
+  if(MACH_TYPE_SEED[up]) return MACH_TYPE_SEED[up];
   const m=key.match(/^[A-Za-z]+/); return m?m[0].toUpperCase():'Autre';
 }
 
@@ -1794,7 +1806,7 @@ function render(){
 
   // machine type (top contributeurs)
   const mtt=sumBy(fr,'mt').filter(([k])=>k&&k!=='Inconnue').slice(0,8);
-  charts.mtype.data.labels=mtt.map(([s])=>'Type '+s);charts.mtype.data.datasets[0].data=mtt.map(([,v])=>v);charts.mtype._vals=mtt.map(([s])=>s);charts.mtype.update();
+  charts.mtype.data.labels=mtt.map(([s])=>/^[A-Z]{1,6}$/.test(s)?('Type '+s):s);charts.mtype.data.datasets[0].data=mtt.map(([,v])=>v);charts.mtype._vals=mtt.map(([s])=>s);charts.mtype.update();
 
   // classification par source : Outils / Machine / Opérateur
   const clm=new Map(sumBy(fr,'pc'));
@@ -2815,22 +2827,28 @@ function importMachTypeExcel(file){
   const rd=new FileReader();
   rd.onload=e=>{ try{
     const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-    const ws=wb.Sheets[wb.SheetNames[0]];
-    const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
-    if(!rows.length){ toast('Fichier vide',true); return; }
-    const hdr=rows[0].map(c=>String(c).toLowerCase().trim());
-    let im=hdr.findIndex(h=>/machine|work\s*station|poste/.test(h)); if(im<0) im=0;
-    let it=hdr.findIndex(h=>/type.*machine|machine.*type|mod[eè]le|^type$/.test(h));
-    if(it<0){ toast('Colonne « Type de machine » introuvable',true); return; }
     let n=0;
-    for(let i=1;i<rows.length;i++){
-      const r=rows[i]; if(!r) continue;
-      const m=String(r[im]==null?'':r[im]).trim();
-      const t=String(r[it]==null?'':r[it]).trim();
-      if(!m||!t) continue;
-      MACH_TYPE[m]=t; n++;
-    }
-    if(!n){ toast('Aucune ligne « Machine + Type » valide',true); return; }
+    wb.SheetNames.forEach(sn=>{
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:false,defval:''});
+      if(!rows.length) return;
+      // localise la ligne d'en-tête (colonnes Machine + Type de machine, même décalées)
+      let hr=-1, im=-1, it=-1;
+      for(let k=0;k<Math.min(8,rows.length);k++){
+        const h=rows[k].map(c=>String(c).toLowerCase().trim());
+        const mi=h.findIndex(x=>/^machine$|work\s*station|^n[°o]?\s*machine$|code\s*machine|^poste$/.test(x));
+        const ti=h.findIndex(x=>/type.*machine|machine.*type|^type$|mod[eè]le/.test(x));
+        if(mi>=0 && ti>=0 && mi!==ti){ hr=k; im=mi; it=ti; break; }
+      }
+      if(hr<0) return;
+      for(let i=hr+1;i<rows.length;i++){
+        const r=rows[i]; if(!r) continue;
+        const m=String(r[im]==null?'':r[im]).trim();
+        const t=String(r[it]==null?'':r[it]).trim();
+        if(!m||!t) continue;
+        MACH_TYPE[m]=t; n++;
+      }
+    });
+    if(!n){ toast('Colonnes « Machine » + « Type de machine » introuvables',true); return; }
     lsSet(LS.machtype, MACH_TYPE);
     DATA.rows.forEach(decorate);
     render(); renderMgTab('refs');

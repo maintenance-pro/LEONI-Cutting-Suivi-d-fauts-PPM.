@@ -3382,6 +3382,11 @@ function applyDensity(d){
     if(deferred){ deferred.prompt(); try{ const r=await deferred.userChoice; if(r&&r.outcome==='accepted') hide(); }catch(e){} deferred=null; return; }
     openHelp();
   });
+
+  // Service worker : ouverture fiable + hors-ligne (dépose sw.js à côté de index.html)
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+  }
 })();
 
 /* ---- FILTRAGE PAR DOUBLE-CLIC SUR LES GRAPHIQUES ----

@@ -3328,14 +3328,17 @@ function applyDensity(d){
   }
   const icon192=makeIcon(192), icon512=makeIcon(512);
   try{
+    const base=location.href.split('#')[0].split('?')[0];
+    const dir=base.substring(0,base.lastIndexOf('/')+1);
     const manifest={
-      name:'CUTTING · Quality Cockpit — LEONI', short_name:'Quality Cockpit',
+      id:base, name:'CUTTING · Quality Cockpit — LEONI', short_name:'Quality Cockpit',
       description:'Tableau de bord qualité — département coupe, LEONI Wiring Systems · Projet : Oumaima Nabil',
-      start_url:location.href.split('#')[0], scope:'./', display:'standalone', orientation:'any',
-      background_color:'#070b14', theme_color:'#0033A0', lang:'fr',
+      start_url:base, scope:dir, display:'standalone', display_override:['standalone','minimal-ui'],
+      orientation:'any', background_color:'#070b14', theme_color:'#0033A0', lang:'fr',
       icons:[
-        icon192?{src:icon192,sizes:'192x192',type:'image/png',purpose:'any maskable'}:null,
-        icon512?{src:icon512,sizes:'512x512',type:'image/png',purpose:'any maskable'}:null
+        icon192?{src:icon192,sizes:'192x192',type:'image/png',purpose:'any'}:null,
+        icon512?{src:icon512,sizes:'512x512',type:'image/png',purpose:'any'}:null,
+        icon512?{src:icon512,sizes:'512x512',type:'image/png',purpose:'maskable'}:null
       ].filter(Boolean)
     };
     const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
@@ -3343,19 +3346,41 @@ function applyDensity(d){
     if(icon192){ const al=document.createElement('link'); al.rel='apple-touch-icon'; al.href=icon192; document.head.appendChild(al); }
   }catch(e){}
 
+  try{ const st=document.createElement('style'); st.textContent='#pwaHelp{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;background:rgba(4,8,18,.66);padding:20px}#pwaHelp .ph-card{background:var(--panel,#0f1726);color:var(--hi,#e9eff8);border:1px solid var(--line2,#2a3650);border-radius:18px;max-width:410px;width:100%;padding:22px;box-shadow:0 30px 80px -20px rgba(0,0,0,.7)}#pwaHelp .ph-h{font-size:17px;font-weight:800;margin-bottom:12px}#pwaHelp .ph-b{font-size:13.5px;line-height:1.75;color:var(--mid,#93a6c4)}#pwaHelp .ph-b b{color:var(--hi,#e9eff8)}#pwaHelp .ph-x{margin-top:16px;width:100%;padding:11px;border:none;border-radius:11px;background:var(--accent,#5b8def);color:#fff;font-weight:700;font-size:14px;cursor:pointer}'; document.head.appendChild(st); }catch(e){}
+
   const btn=document.getElementById('pwaBtn');
-  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const ua=navigator.userAgent||'';
+  const isIOS=/iphone|ipad|ipod/i.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+  const isSafari=/safari/i.test(ua)&&!/chrome|crios|fxios|edg|android/i.test(ua);
+  const isAndroid=/android/i.test(ua);
   const standalone=(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
   let deferred=null;
   const show=()=>{ if(btn) btn.style.display='inline-flex'; };
   const hide=()=>{ if(btn) btn.style.display='none'; };
-  if(!standalone) show();
+  if(standalone) hide(); else show();
   window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferred=e; show(); });
-  window.addEventListener('appinstalled',()=>{ deferred=null; hide(); try{toast('Application installée ✓ · disponible depuis l\u2019écran d\u2019accueil');}catch(e){} });
+  window.addEventListener('appinstalled',()=>{ deferred=null; hide(); closeHelp(); try{toast('Application installée ✓');}catch(e){} });
+
+  function steps(){
+    if(isIOS && !isSafari) return 'Sur <b>iPhone / iPad</b>, l’installation ne fonctionne que dans <b>Safari</b>.<br><br>1. Ouvre cette page dans <b>Safari</b>.<br>2. Touche le bouton <b>Partager</b> (le carré avec une flèche vers le haut).<br>3. Choisis <b>« Sur l’écran d’accueil »</b>.<br>4. Touche <b>Ajouter</b>.';
+    if(isIOS) return '1. Touche le bouton <b>Partager</b> en bas de Safari (le carré avec une flèche ↑).<br>2. Fais défiler puis choisis <b>« Sur l’écran d’accueil »</b>.<br>3. Touche <b>Ajouter</b> en haut à droite.<br><br>L’icône <b>Quality Cockpit</b> apparaît alors sur ton écran d’accueil.';
+    if(isAndroid) return '1. Touche le menu <b>⋮</b> en haut à droite de Chrome.<br>2. Choisis <b>« Installer l’application »</b> (ou « Ajouter à l’écran d’accueil »).<br>3. Confirme avec <b>Installer</b>.<br><br>Si l’option n’apparaît pas, patiente quelques secondes après le chargement puis réessaie.';
+    return '1. Clique l’icône <b>Installer</b> (⊕) à droite de la barre d’adresse.<br>2. Ou ouvre le menu <b>⋮</b> puis <b>« Installer Quality Cockpit… »</b>.<br>3. Confirme avec <b>Installer</b>.';
+  }
+  let helpEl=null;
+  function openHelp(){
+    if(!helpEl){ helpEl=document.createElement('div'); helpEl.id='pwaHelp';
+      helpEl.innerHTML='<div class="ph-card"><div class="ph-h">📲 Installer Quality Cockpit</div><div class="ph-b"></div><button class="ph-x">J’ai compris</button></div>';
+      document.body.appendChild(helpEl);
+      helpEl.addEventListener('click',e=>{ if(e.target===helpEl||e.target.classList.contains('ph-x')) closeHelp(); });
+    }
+    helpEl.querySelector('.ph-b').innerHTML=steps(); helpEl.style.display='flex';
+  }
+  function closeHelp(){ if(helpEl) helpEl.style.display='none'; }
+
   if(btn) btn.addEventListener('click',async()=>{
-    if(deferred){ deferred.prompt(); try{ await deferred.userChoice; }catch(e){} deferred=null; hide(); return; }
-    if(isIOS){ try{ toast('iPhone/iPad : appuie sur Partager ⎋ puis « Sur l\u2019écran d\u2019accueil »'); }catch(e){} return; }
-    try{ toast('Ouvre le menu du navigateur puis « Installer l\u2019application » (icône ⊕ dans la barre d\u2019adresse)'); }catch(e){}
+    if(deferred){ deferred.prompt(); try{ const r=await deferred.userChoice; if(r&&r.outcome==='accepted') hide(); }catch(e){} deferred=null; return; }
+    openHelp();
   });
 })();
 
